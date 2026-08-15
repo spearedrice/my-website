@@ -1,2 +1,2 @@
 # my-website
-new version for stardance
+it's really cool!
