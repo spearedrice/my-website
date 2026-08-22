@@ -1,0 +1,52 @@
+/* styles.css */
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #d9e4f5;
+    color: #333;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+}
+
+/* Main panels */
+.panel {
+    width: 700px;
+    margin: 25px auto;
+    padding: 20px;
+
+    background: #fff;
+
+    border: 1px solid #aaa;
+    border-radius: 4px;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* First panel */
+.panel:first-of-type {
+    background: linear-gradient(#ffffff, #eeeeee);
+}
+
+.intro {
+    text-align: center;
+}
+
+/* Headings */
+h1 {
+    margin: 0 0 8px 0;
+    color: #2b5797;
+    font-size: 36px;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+/* Text */
+p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+/* infobox */
+.panel:nth-of-type(2) {
+    border-top: 4px solid #4a76a8;
+}
