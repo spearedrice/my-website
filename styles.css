@@ -1,52 +1,48 @@
-/* styles.css */
-
 body {
     margin: 0;
-    padding: 0;
+    padding: 30px 15px;
     background: #d9e4f5;
-    color: #333;
+    color: #222;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
 }
 
-/* Main panels */
 .panel {
+    box-sizing: border-box;
     width: 700px;
-    margin: 25px auto;
-    padding: 20px;
-
+    max-width: 100%;
+    margin: 0 auto 18px;
+    padding: 18px;
     background: #fff;
-
-    border: 1px solid #aaa;
-    border-radius: 4px;
-
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid #999;
 }
 
-/* First panel */
 .panel:first-of-type {
-    background: linear-gradient(#ffffff, #eeeeee);
+    background: #f5f5f5;
+    border-bottom: 3px solid #4a76a8;
 }
 
 .intro {
-    text-align: center;
+    text-align: left;
 }
 
-/* Headings */
 h1 {
-    margin: 0 0 8px 0;
+    margin: 0 0 4px;
     color: #2b5797;
-    font-size: 36px;
-    text-shadow: 1px 1px 0 #fff;
+    font-size: 32px;
 }
 
-/* Text */
+h2 {
+    margin: 0 0 10px;
+    color: #2b5797;
+    font-size: 20px;
+}
+
 p {
     margin: 8px 0;
     line-height: 1.5;
 }
 
-/* infobox */
 .panel:nth-of-type(2) {
-    border-top: 4px solid #4a76a8;
+    border-left: 4px solid #4a76a8;
 }
