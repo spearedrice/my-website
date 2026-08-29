@@ -40,6 +40,7 @@ apps.forEach(function(app) {
         resizing: false,
         maximized: false,
         savedRect: null,
+        opened: false,
         x: 0,
         y: 0,
         w: 0,
@@ -47,8 +48,23 @@ apps.forEach(function(app) {
     };
 });
 
+function centerWin(id) {
+    const s = state[id];
+    const rect = s.el.getBoundingClientRect();
+
+    s.el.style.transform = "none";
+    s.el.style.left = (window.innerWidth - rect.width) / 2 + "px";
+    s.el.style.top = (window.innerHeight - rect.height) / 2 + "px";
+}
+
 function openWin(id) {
     const s = state[id];
+
+    if (!s.opened) {
+        centerWin(id);
+        s.opened = true;
+    }
+
     s.el.style.display = "block";
     s.el.classList.remove("minimized");
     focusWin(id);
