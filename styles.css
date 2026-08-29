@@ -78,16 +78,29 @@ button:hover {
 
 .window-titlebar {
     box-sizing: border-box;
-    height: 34px;
-    padding-left: 10px;
+    height: 28px;
+    padding-left: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: linear-gradient(#4d78aa, #2b5797);
     color: white;
     font-weight: bold;
+    font-size: 13px;
     user-select: none;
     cursor: move;
+}
+
+.titlebar-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.titlebar-icon {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
 }
 
 .window-buttons {
@@ -97,14 +110,14 @@ button:hover {
 
 .window-buttons button {
     box-sizing: border-box;
-    width: 38px;
+    width: 32px;
     height: 100%;
     padding: 0;
     border: 0;
     border-left: 1px solid rgba(255, 255, 255, 0.25);
     background: transparent;
     color: white;
-    font-size: 20px;
+    font-size: 16px;
     line-height: 1;
     cursor: pointer;
 }
@@ -116,25 +129,22 @@ button:hover {
 .window-content {
     box-sizing: border-box;
     width: 100%;
-    height: calc(100% - 34px);
-    padding: 10px;
+    height: calc(100% - 28px);
+    padding: 0;
     background: #222;
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow: hidden;
 }
 
-.window-content img {
+.window-content iframe {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    border: 0;
 }
 
 .os-window.minimized {
-    height: 34px !important;
-    min-height: 34px;
+    height: 28px !important;
+    min-height: 28px;
 }
 
 .os-window.minimized .window-content,
@@ -186,6 +196,9 @@ button:hover {
 }
 
 .taskbar-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     height: 24px;
     padding: 0 10px;
     background: #2b5797;
@@ -195,6 +208,11 @@ button:hover {
     line-height: 24px;
     cursor: pointer;
     user-select: none;
+}
+
+.taskbar-icon {
+    width: 14px;
+    height: 14px;
 }
 
 .taskbar-item:hover {

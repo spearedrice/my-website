@@ -1,121 +1,185 @@
-const win = document.getElementById("funny");
-const bar = document.getElementById("titlebar");
-const resize = document.querySelector(".resize");
+const apps = [
+    { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" }
+];
+
+const windowsRoot = document.getElementById("windows");
 const taskbar = document.getElementById("taskbar");
 
-let dragging = false;
-let resizing = false;
-let x = 0;
-let y = 0;
-let w = 0;
-let h = 0;
+const state = {};
 
-let taskItem = null;
+apps.forEach(function(app) {
+    const win = document.createElement("div");
+    win.className = "os-window";
+    win.id = "win-" + app.id;
 
-function openWin() {
-    win.style.display = "block";
-    win.classList.remove("minimized");
-    focusWin();
-    updateTaskbar();
+    win.innerHTML =
+        '<div class="window-titlebar">' +
+            '<span class="titlebar-label">' +
+                '<img class="titlebar-icon" src="' + app.icon + '" alt="" />' +
+                app.title +
+            '</span>' +
+            '<div class="window-buttons">' +
+                '<button data-action="min">−</button>' +
+                '<button data-action="close">×</button>' +
+            '</div>' +
+        '</div>' +
+        '<div class="window-content">' +
+            '<iframe src="' + app.page + '" frameborder="0"></iframe>' +
+        '</div>' +
+        '<div class="resize"></div>';
+
+    windowsRoot.appendChild(win);
+
+    state[app.id] = {
+        el: win,
+        bar: win.querySelector(".window-titlebar"),
+        resize: win.querySelector(".resize"),
+        taskItem: null,
+        dragging: false,
+        resizing: false,
+        x: 0,
+        y: 0,
+        w: 0,
+        h: 0
+    };
+});
+
+function openWin(id) {
+    const s = state[id];
+    s.el.style.display = "block";
+    s.el.classList.remove("minimized");
+    focusWin(id);
+    updateTaskbar(id);
 }
 
-function closeWin() {
-    win.style.display = "none";
-    removeTaskItem();
+function closeWin(id) {
+    const s = state[id];
+    s.el.style.display = "none";
+    if (s.taskItem) {
+        s.taskItem.remove();
+        s.taskItem = null;
+    }
 }
 
-function minWin() {
-    win.classList.toggle("minimized");
-    updateTaskbar();
+function minWin(id) {
+    const s = state[id];
+    s.el.classList.toggle("minimized");
+    updateTaskbar(id);
 }
 
-function focusWin() {
-    win.style.zIndex = 1001;
-    if (taskItem) taskItem.classList.add("active");
+function focusWin(id) {
+    const s = state[id];
+    s.el.style.zIndex = 1001;
+    if (s.taskItem) s.taskItem.classList.add("active");
 }
 
-function updateTaskbar() {
-    if (!taskItem) {
-        taskItem = document.createElement("div");
-        taskItem.className = "taskbar-item";
-        taskItem.textContent = "fun";
+function updateTaskbar(id) {
+    const app = apps.find(function(a) { return a.id === id; });
+    const s = state[id];
 
-        taskItem.addEventListener("click", function() {
-            if (win.style.display === "none") {
-                win.style.display = "block";
-                win.classList.remove("minimized");
+    if (!s.taskItem) {
+        const item = document.createElement("div");
+        item.className = "taskbar-item";
+
+        const icon = document.createElement("img");
+        icon.className = "taskbar-icon";
+        icon.src = app.icon;
+        icon.alt = "";
+
+        const label = document.createElement("span");
+        label.textContent = app.title;
+
+        item.appendChild(icon);
+        item.appendChild(label);
+
+        item.addEventListener("click", function() {
+            if (s.el.style.display === "none") {
+                s.el.style.display = "block";
+                s.el.classList.remove("minimized");
             } else {
-                minWin();
+                minWin(id);
             }
-            focusWin();
+            focusWin(id);
         });
 
-        taskbar.appendChild(taskItem);
+        taskbar.appendChild(item);
+        s.taskItem = item;
     }
 
-    if (win.classList.contains("minimized")) {
-        taskItem.classList.remove("active");
+    if (s.el.classList.contains("minimized")) {
+        s.taskItem.classList.remove("active");
     } else {
-        taskItem.classList.add("active");
+        s.taskItem.classList.add("active");
     }
 }
 
-function removeTaskItem() {
-    if (taskItem) {
-        taskItem.remove();
-        taskItem = null;
-    }
-}
+Object.keys(state).forEach(function(id) {
+    const s = state[id];
 
-win.addEventListener("mousedown", function() {
-    focusWin();
-});
+    s.el.addEventListener("mousedown", function() {
+        focusWin(id);
+    });
 
-bar.addEventListener("mousedown", function(e) {
-    if (e.target.tagName === "BUTTON") return;
+    s.el.querySelector('[data-action="min"]').addEventListener("click", function() {
+        minWin(id);
+    });
 
-    dragging = true;
+    s.el.querySelector('[data-action="close"]').addEventListener("click", function() {
+        closeWin(id);
+    });
 
-    const rect = win.getBoundingClientRect();
+    s.bar.addEventListener("mousedown", function(e) {
+        if (e.target.tagName === "BUTTON") return;
 
-    x = e.clientX - rect.left;
-    y = e.clientY - rect.top;
+        s.dragging = true;
 
-    win.style.transform = "none";
-    win.style.left = rect.left + "px";
-    win.style.top = rect.top + "px";
-});
+        const rect = s.el.getBoundingClientRect();
 
-resize.addEventListener("mousedown", function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+        s.x = e.clientX - rect.left;
+        s.y = e.clientY - rect.top;
 
-    resizing = true;
+        s.el.style.transform = "none";
+        s.el.style.left = rect.left + "px";
+        s.el.style.top = rect.top + "px";
+    });
 
-    const rect = win.getBoundingClientRect();
+    s.resize.addEventListener("mousedown", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
 
-    x = e.clientX;
-    y = e.clientY;
-    w = rect.width;
-    h = rect.height;
+        s.resizing = true;
+
+        const rect = s.el.getBoundingClientRect();
+
+        s.x = e.clientX;
+        s.y = e.clientY;
+        s.w = rect.width;
+        s.h = rect.height;
+    });
 });
 
 document.addEventListener("mousemove", function(e) {
-    if (dragging) {
-        win.style.left = e.clientX - x + "px";
-        win.style.top = e.clientY - y + "px";
-    }
+    Object.keys(state).forEach(function(id) {
+        const s = state[id];
 
-    if (resizing) {
-        const width = w + (e.clientX - x);
-        const height = h + (e.clientY - y);
+        if (s.dragging) {
+            s.el.style.left = e.clientX - s.x + "px";
+            s.el.style.top = e.clientY - s.y + "px";
+        }
 
-        if (width >= 300) win.style.width = width + "px";
-        if (height >= 200) win.style.height = height + "px";
-    }
+        if (s.resizing) {
+            const width = s.w + (e.clientX - s.x);
+            const height = s.h + (e.clientY - s.y);
+
+            if (width >= 300) s.el.style.width = width + "px";
+            if (height >= 200) s.el.style.height = height + "px";
+        }
+    });
 });
 
 document.addEventListener("mouseup", function() {
-    dragging = false;
-    resizing = false;
+    Object.keys(state).forEach(function(id) {
+        state[id].dragging = false;
+        state[id].resizing = false;
+    });
 });
