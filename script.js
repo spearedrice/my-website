@@ -20,6 +20,7 @@ apps.forEach(function(app) {
             '</span>' +
             '<div class="window-buttons">' +
                 '<button data-action="min">−</button>' +
+                '<button data-action="max">□</button>' +
                 '<button data-action="close">×</button>' +
             '</div>' +
         '</div>' +
@@ -37,6 +38,8 @@ apps.forEach(function(app) {
         taskItem: null,
         dragging: false,
         resizing: false,
+        maximized: false,
+        savedRect: null,
         x: 0,
         y: 0,
         w: 0,
@@ -65,6 +68,36 @@ function minWin(id) {
     const s = state[id];
     s.el.classList.toggle("minimized");
     updateTaskbar(id);
+}
+
+function maxWin(id) {
+    const s = state[id];
+
+    if (s.maximized) {
+        s.el.style.left = s.savedRect.left;
+        s.el.style.top = s.savedRect.top;
+        s.el.style.width = s.savedRect.width;
+        s.el.style.height = s.savedRect.height;
+        s.maximized = false;
+    } else {
+        const rect = s.el.getBoundingClientRect();
+
+        s.savedRect = {
+            left: rect.left + "px",
+            top: rect.top + "px",
+            width: rect.width + "px",
+            height: rect.height + "px"
+        };
+
+        s.el.style.transform = "none";
+        s.el.style.left = "0px";
+        s.el.style.top = "0px";
+        s.el.style.width = "100vw";
+        s.el.style.height = "calc(100vh - 34px)";
+        s.maximized = true;
+    }
+
+    focusWin(id);
 }
 
 function focusWin(id) {
@@ -124,12 +157,17 @@ Object.keys(state).forEach(function(id) {
         minWin(id);
     });
 
+    s.el.querySelector('[data-action="max"]').addEventListener("click", function() {
+        maxWin(id);
+    });
+
     s.el.querySelector('[data-action="close"]').addEventListener("click", function() {
         closeWin(id);
     });
 
     s.bar.addEventListener("mousedown", function(e) {
         if (e.target.tagName === "BUTTON") return;
+        if (s.maximized) return;
 
         s.dragging = true;
 
@@ -146,6 +184,7 @@ Object.keys(state).forEach(function(id) {
     s.resize.addEventListener("mousedown", function(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (s.maximized) return;
 
         s.resizing = true;
 
