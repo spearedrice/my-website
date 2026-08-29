@@ -198,6 +198,14 @@ Object.keys(state).forEach(function(id) {
 });
 
 document.addEventListener("mousemove", function(e) {
+    if (e.buttons === 0) {
+        Object.keys(state).forEach(function(id) {
+            state[id].dragging = false;
+            state[id].resizing = false;
+        });
+        return;
+    }
+
     Object.keys(state).forEach(function(id) {
         const s = state[id];
 
