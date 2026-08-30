@@ -15,6 +15,13 @@ body {
     font-size: 14px;
 }
 
+#main-panel {
+    position: relative;
+    width: 700px;
+    max-width: 100%;
+    margin: 0 auto;
+    cursor: move;
+}
 .panel {
     box-sizing: border-box;
     width: 700px;
@@ -230,6 +237,12 @@ button:active {
     line-height: 24px;
     cursor: pointer;
     user-select: none;
+}
+
+.taskbar-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
 }
 
 .taskbar-item:hover {

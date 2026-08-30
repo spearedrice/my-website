@@ -264,3 +264,42 @@ document.addEventListener("mouseup", function() {
         state[id].resizing = false;
     });
 });
+
+const mainPanel = document.getElementById("main-panel");
+
+let panelDragging = false;
+let panelX = 0;
+let panelY = 0;
+
+mainPanel.addEventListener("mousedown", function(e) {
+    if (e.target.tagName === "BUTTON") return;
+
+    panelDragging = true;
+
+    const rect = mainPanel.getBoundingClientRect();
+
+    panelX = e.clientX - rect.left;
+    panelY = e.clientY - rect.top;
+
+    mainPanel.style.position = "fixed";
+    mainPanel.style.left = rect.left + "px";
+    mainPanel.style.top = rect.top + "px";
+    mainPanel.style.width = rect.width + "px";
+    mainPanel.style.margin = "0";
+});
+
+document.addEventListener("mousemove", function(e) {
+    if (e.buttons === 0) {
+        panelDragging = false;
+        return;
+    }
+
+    if (panelDragging) {
+        mainPanel.style.left = e.clientX - panelX + "px";
+        mainPanel.style.top = e.clientY - panelY + "px";
+    }
+});
+
+document.addEventListener("mouseup", function() {
+    panelDragging = false;
+});
