@@ -48,6 +48,23 @@ apps.forEach(function(app) {
     };
 });
 
+const desktopIcons = document.getElementById("desktop-icons");
+
+apps.forEach(function(app) {
+    const icon = document.createElement("div");
+    icon.className = "desktop-icon";
+
+    icon.innerHTML =
+        '<img src="' + app.icon + '" alt="" />' +
+        '<span>' + app.title + '</span>';
+
+    icon.addEventListener("click", function() {
+        openWin(app.id);
+    });
+
+    desktopIcons.appendChild(icon);
+});
+
 function centerWin(id) {
     const s = state[id];
     const rect = s.el.getBoundingClientRect();
@@ -60,13 +77,14 @@ function centerWin(id) {
 function openWin(id) {
     const s = state[id];
 
+    s.el.style.display = "block";
+    s.el.classList.remove("minimized");
+
     if (!s.opened) {
         centerWin(id);
         s.opened = true;
     }
 
-    s.el.style.display = "block";
-    s.el.classList.remove("minimized");
     focusWin(id);
     updateTaskbar(id);
 }
