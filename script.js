@@ -1,5 +1,6 @@
 const apps = [
-    { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" }
+    { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
+    { id: "notes", title: "Notepad", icon: "images/notes.png", page: "pages/notes.html" }
 ];
 
 const windowsRoot = document.getElementById("windows");
