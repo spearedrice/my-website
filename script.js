@@ -312,3 +312,23 @@ document.addEventListener("mousemove", function(e) {
 document.addEventListener("mouseup", function() {
     panelDragging = false;
 });
+
+const musicAudio = document.getElementById("music-audio");
+const musicToggle = document.getElementById("music-toggle");
+const musicVolume = document.getElementById("music-volume");
+
+musicAudio.volume = musicVolume.value;
+
+musicToggle.addEventListener("click", function() {
+    if (musicAudio.paused) {
+        musicAudio.play();
+        musicToggle.textContent = "❚❚";
+    } else {
+        musicAudio.pause();
+        musicToggle.textContent = "▶";
+    }
+});
+
+musicVolume.addEventListener("input", function() {
+    musicAudio.volume = musicVolume.value;
+});

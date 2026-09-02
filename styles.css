@@ -302,3 +302,64 @@ button:active {
 .desktop-icon:hover span {
     text-decoration: underline;
 }
+
+#music-player {
+    position: fixed;
+    right: 12px;
+    bottom: 44px;
+    width: 180px;
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+    z-index: 1500;
+    font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+}
+
+.music-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+}
+
+.music-icon {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+}
+
+.music-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#music-track {
+    font-size: 12px;
+    color: #222;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#music-toggle {
+    width: 28px;
+    height: 24px;
+    padding: 0;
+}
+
+#music-volume {
+    flex: 1;
+}

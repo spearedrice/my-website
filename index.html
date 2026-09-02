@@ -30,6 +30,21 @@
 
         <div id="windows"></div>
 
+        <div id="music-player">
+            <div class="music-titlebar">
+                <img class="music-icon" src="images/music.png" alt="" />
+                now playing
+            </div>
+            <div class="music-body">
+                <span id="music-track">theme.mp3</span>
+                <div class="music-controls">
+                    <button id="music-toggle">▶</button>
+                    <input id="music-volume" type="range" min="0" max="1" step="0.01" value="0.5" />
+                </div>
+            </div>
+            <audio id="music-audio" src="audio/theme.mp3" loop></audio>
+        </div>
+
         <div id="taskbar" class="taskbar"></div>
 
         <script src="script.js"></script>
