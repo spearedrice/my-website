@@ -1,6 +1,6 @@
 const apps = [
     { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
-    { id: "notes", title: "Notepad", icon: "images/notes.png", page: "pages/notes.html" }
+    { id: "notes", title: "notes", icon: "images/notes.png", page: "pages/notes.html" }
 ];
 
 const windowsRoot = document.getElementById("windows");
@@ -27,6 +27,7 @@ apps.forEach(function(app) {
         '</div>' +
         '<div class="window-content">' +
             '<iframe src="' + app.page + '" frameborder="0"></iframe>' +
+            '<div class="iframe-blocker"></div>' +
         '</div>' +
         '<div class="resize"></div>';
 
@@ -160,13 +161,16 @@ function updateTaskbar(id) {
         item.appendChild(icon);
         item.appendChild(label);
 
-        item.addEventListener("click", function() {
+        item.addEventListener("click", function(e) {
+            e.stopPropagation();
+
             if (s.el.style.display === "none") {
                 s.el.style.display = "block";
                 s.el.classList.remove("minimized");
             } else {
                 minWin(id);
             }
+
             focusWin(id);
         });
 
@@ -205,6 +209,7 @@ Object.keys(state).forEach(function(id) {
         if (s.maximized) return;
 
         s.dragging = true;
+        s.el.classList.add("interacting");
 
         const rect = s.el.getBoundingClientRect();
 
@@ -222,6 +227,7 @@ Object.keys(state).forEach(function(id) {
         if (s.maximized) return;
 
         s.resizing = true;
+        s.el.classList.add("interacting");
 
         const rect = s.el.getBoundingClientRect();
 
@@ -237,6 +243,7 @@ document.addEventListener("mousemove", function(e) {
         Object.keys(state).forEach(function(id) {
             state[id].dragging = false;
             state[id].resizing = false;
+            state[id].el.classList.remove("interacting");
         });
         return;
     }
@@ -263,6 +270,7 @@ document.addEventListener("mouseup", function() {
     Object.keys(state).forEach(function(id) {
         state[id].dragging = false;
         state[id].resizing = false;
+        state[id].el.classList.remove("interacting");
     });
 });
 
