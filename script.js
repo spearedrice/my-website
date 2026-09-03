@@ -1,6 +1,11 @@
+const musicWidget = {
+    icon: "images/music-icon.png",
+    title: "now playing"
+};
+
 const apps = [
     { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
-    { id: "notes", title: "notes", icon: "images/notes.png", page: "pages/notes.html" }
+    { id: "notes", title: "Notes", icon: "images/notes.png", page: "pages/notes.html" }
 ];
 
 const windowsRoot = document.getElementById("windows");
@@ -313,22 +318,5 @@ document.addEventListener("mouseup", function() {
     panelDragging = false;
 });
 
-const musicAudio = document.getElementById("music-audio");
-const musicToggle = document.getElementById("music-toggle");
-const musicVolume = document.getElementById("music-volume");
-
-musicAudio.volume = musicVolume.value;
-
-musicToggle.addEventListener("click", function() {
-    if (musicAudio.paused) {
-        musicAudio.play();
-        musicToggle.textContent = "❚❚";
-    } else {
-        musicAudio.pause();
-        musicToggle.textContent = "▶";
-    }
-});
-
-musicVolume.addEventListener("input", function() {
-    musicAudio.volume = musicVolume.value;
-});
+document.getElementById("music-icon-img").src = musicWidget.icon;
+document.getElementById("music-title-label").textContent = musicWidget.title;

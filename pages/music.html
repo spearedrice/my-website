@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>music</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 10px;
+                background: #d4d0c8;
+                font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+                box-sizing: border-box;
+                position: relative;
+            }
+
+            #audio-gate {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 50;
+                cursor: pointer;
+            }
+
+            .gate-box {
+                width: 160px;
+                background: #d4d0c8;
+                border: 2px solid;
+                border-color: #fff #808080 #808080 #fff;
+                box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+            }
+
+            .gate-titlebar {
+                background: linear-gradient(90deg, #000080, #1084d0);
+                color: #fff;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 6px;
+            }
+
+            .gate-body {
+                padding: 12px 8px;
+                text-align: center;
+            }
+
+            .gate-body p {
+                margin: 0;
+                font-size: 11px;
+                color: #222;
+            }
+
+            .body-inner {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            #art {
+                width: 72px;
+                height: 72px;
+                object-fit: cover;
+                border: 2px solid;
+                border-color: #808080 #fff #fff #808080;
+                image-rendering: pixelated;
+            }
+
+            .info {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            #track {
+                font-size: 12px;
+                font-weight: bold;
+                color: #222;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 190px;
+            }
+
+            #artist {
+                font-size: 11px;
+                color: #444;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 190px;
+            }
+
+            .controls {
+                display: flex;
+                gap: 4px;
+            }
+
+            button {
+                width: 34px;
+                height: 26px;
+                padding: 0;
+                background: #d4d0c8;
+                color: #000;
+                border: 2px solid;
+                border-color: #fff #808080 #808080 #fff;
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            button:active {
+                border-color: #808080 #fff #fff #808080;
+            }
+
+            .seek-row {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .seek-row span {
+                font-size: 10px;
+                color: #333;
+                width: 28px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            #seek {
+                flex: 1;
+            }
+
+            .volume-row {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .volume-label {
+                font-size: 10px;
+                color: #333;
+                width: 24px;
+                flex-shrink: 0;
+            }
+
+            #volume-percent {
+                font-size: 10px;
+                color: #333;
+                width: 32px;
+                text-align: right;
+                flex-shrink: 0;
+            }
+
+            #seek,
+            #volume {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 100%;
+                height: 12px;
+                background: #808080;
+                border: 2px solid;
+                border-color: #808080 #fff #fff #808080;
+                outline: none;
+            }
+
+            #seek::-webkit-slider-thumb,
+            #volume::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 12px;
+                height: 16px;
+                background: #d4d0c8;
+                border: 2px solid;
+                border-color: #fff #808080 #808080 #fff;
+                cursor: pointer;
+            }
+
+            #seek::-moz-range-thumb,
+            #volume::-moz-range-thumb {
+                width: 12px;
+                height: 16px;
+                background: #d4d0c8;
+                border: 2px solid;
+                border-color: #fff #808080 #808080 #fff;
+                cursor: pointer;
+                border-radius: 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="audio-gate">
+            <div class="gate-box">
+                <div class="gate-titlebar">system</div>
+                <div class="gate-body">
+                    <p>click to enable audio</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="body-inner">
+            <img id="art" src="../images/music-icon.png" alt="" />
+
+            <div class="info">
+                <span id="track">—</span>
+                <span id="artist">—</span>
+            </div>
+
+            <div class="controls">
+                <button id="prev">◀◀</button>
+                <button id="toggle">▶</button>
+                <button id="next">▶▶</button>
+            </div>
+
+            <div class="seek-row">
+                <span id="current-time">0:00</span>
+                <input id="seek" type="range" min="0" max="0" step="0.01" value="0" />
+                <span id="duration">0:00</span>
+            </div>
+
+            <div class="volume-row">
+                <span class="volume-label">vol</span>
+                <input id="volume" type="range" min="0" max="1" step="0.01" value="0.5" />
+                <span id="volume-percent">50%</span>
+            </div>
+
+            <audio id="audio"></audio>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
+        <script>
+            const tracks = [
+                "../audio/Fall From The Sky.mp3"
+            ];
+
+            const audio = document.getElementById("audio");
+            const toggle = document.getElementById("toggle");
+            const prev = document.getElementById("prev");
+            const next = document.getElementById("next");
+            const volume = document.getElementById("volume");
+            const volumePercent = document.getElementById("volume-percent");
+            const seek = document.getElementById("seek");
+            const currentTimeLabel = document.getElementById("current-time");
+            const durationLabel = document.getElementById("duration");
+            const trackLabel = document.getElementById("track");
+            const artistLabel = document.getElementById("artist");
+            const art = document.getElementById("art");
+            const gate = document.getElementById("audio-gate");
+
+            let trackIndex = 0;
+
+            audio.volume = volume.value;
+
+            function formatTime(sec) {
+                if (!isFinite(sec)) return "0:00";
+                const m = Math.floor(sec / 60);
+                const s = Math.floor(sec % 60);
+                return m + ":" + (s < 10 ? "0" : "") + s;
+            }
+
+            function loadTrack(index) {
+                trackIndex = (index + tracks.length) % tracks.length;
+                const path = tracks[trackIndex];
+
+                audio.src = path;
+                trackLabel.textContent = path.split("/").pop();
+                artistLabel.textContent = "—";
+                art.src = "../images/music-icon.png";
+                seek.value = 0;
+                currentTimeLabel.textContent = "0:00";
+                durationLabel.textContent = "0:00";
+
+                window.jsmediatags.read(path, {
+                    onSuccess: function(tag) {
+                        const info = tag.tags;
+
+                        if (info.title) trackLabel.textContent = info.title;
+                        if (info.artist) artistLabel.textContent = info.artist;
+
+                        if (info.picture) {
+                            const bytes = new Uint8Array(info.picture.data);
+                            let binary = "";
+                            for (let i = 0; i < bytes.length; i++) {
+                                binary += String.fromCharCode(bytes[i]);
+                            }
+                            art.src = "data:" + info.picture.format + ";base64," + btoa(binary);
+                        }
+                    },
+                    onError: function(error) {
+                        console.log("jsmediatags failed:", error);
+                    }
+                });
+            }
+
+            audio.addEventListener("play", function() {
+                toggle.textContent = "❚❚";
+            });
+
+            audio.addEventListener("pause", function() {
+                toggle.textContent = "▶";
+            });
+
+            toggle.addEventListener("click", function() {
+                if (audio.paused) {
+                    audio.play().catch(function(error) {
+                        console.log("play failed:", error);
+                    });
+                } else {
+                    audio.pause();
+                }
+            });
+
+            prev.addEventListener("click", function() {
+                loadTrack(trackIndex - 1);
+                audio.play().catch(function(error) {
+                    console.log("play failed:", error);
+                });
+            });
+
+            next.addEventListener("click", function() {
+                loadTrack(trackIndex + 1);
+                audio.play().catch(function(error) {
+                    console.log("play failed:", error);
+                });
+            });
+
+            audio.addEventListener("ended", function() {
+                loadTrack(trackIndex + 1);
+                audio.play().catch(function(error) {
+                    console.log("play failed:", error);
+                });
+            });
+
+            audio.addEventListener("loadedmetadata", function() {
+                seek.max = audio.duration;
+                durationLabel.textContent = formatTime(audio.duration);
+            });
+
+            audio.addEventListener("timeupdate", function() {
+                seek.value = audio.currentTime;
+                currentTimeLabel.textContent = formatTime(audio.currentTime);
+            });
+
+            seek.addEventListener("input", function() {
+                audio.currentTime = seek.value;
+            });
+
+            volume.addEventListener("input", function() {
+                audio.volume = volume.value;
+                volumePercent.textContent = Math.round(volume.value * 100) + "%";
+            });
+
+            loadTrack(0);
+            volumePercent.textContent = Math.round(volume.value * 100) + "%";
+
+            gate.addEventListener("click", function() {
+                gate.style.display = "none";
+                audio.play().catch(function(error) {
+                    console.log("play failed:", error);
+                });
+            });
+        </script>
+    </body>
+</html>
