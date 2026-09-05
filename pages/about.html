@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>about</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 18px;
+                background: #d4d0c8;
+                font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+                box-sizing: border-box;
+            }
+
+            .profile-row {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-bottom: 14px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #808080;
+            }
+
+            .profile-pic {
+                width: 64px;
+                height: 64px;
+                object-fit: cover;
+                border: 2px solid;
+                border-color: #808080 #fff #fff #808080;
+                image-rendering: pixelated;
+            }
+
+            .profile-stats {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                font-size: 12px;
+                color: #333;
+            }
+
+            .profile-stats strong {
+                color: #111;
+            }
+
+            h2 {
+                margin: 0 0 10px;
+                color: #2b5797;
+                font-size: 20px;
+            }
+
+            p {
+                margin: 8px 0;
+                line-height: 1.5;
+                color: #222;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="profile-row">
+            <img class="profile-pic" src="../images/profile.png" alt="" />
+
+            <div class="profile-stats">
+                <span><strong>Status:</strong> online</span>
+                <span><strong>Location:</strong> Internet</span>
+                <span><strong>Member since:</strong> a long long time ago (a lie)</span>
+            </div>
+        </div>
+
+        <h2>About Me</h2>
+        <p>
+            Hey! I'm Rice. This site is still a work in progress, but I'll be
+            adding more to it over time.
+        </p>
+    </body>
+</html>

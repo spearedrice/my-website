@@ -8,40 +8,35 @@
     </head>
 
     <body>
-        <div id="desktop-icons"></div>
+        <div id="entry-overlay">
+            <video id="entry-video" autoplay muted loop playsinline>
+                <source src="videos/birb.webm" type="video/webm" />
+            </video>
 
-        <div id="main-panel">
-            <div class="panel">
-                <div class="intro">
-                    <h1>Hello!</h1>
-                    <p>Welcome to my site!</p>
+            <div class="entry-box">
+                <div class="entry-titlebar">system</div>
+                <div class="entry-body">
+                    <p>click to enter</p>
                 </div>
             </div>
-
-            <div class="panel">
-                <h2>About Me</h2>
-                <p>
-                    Hey! I'm Rice. This site is still a work in progress, but
-                    I'll be adding more to it over time.
-                </p>
-            </div>
         </div>
+
+        <div id="system-info">
+            <img src="images/watermark.png" alt="" />
+            <span>RICE-PC<br />v1.1.0</span>
+        </div>
+
+        <div id="desktop-icons"></div>
 
         <div id="windows"></div>
 
         <div id="music-player">
-            <div class="music-titlebar">
-                <img class="music-icon" id="music-icon-img" src="" alt="" />
-                <span id="music-title-label">now playing</span>
-            </div>
-
-            <div class="music-body">
-                <iframe id="music-frame" src="pages/music.html" frameborder="0"></iframe>
-            </div>
+            <div id="music-player-content"></div>
         </div>
 
         <div id="taskbar" class="taskbar"></div>
 
+        <script src="https://cdn.jsdelivr.net/npm/mp3tag.js@latest/dist/mp3tag.min.js"></script>
         <script src="script.js"></script>
     </body>
 </html>
