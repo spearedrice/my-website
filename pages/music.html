@@ -1,9 +1,14 @@
 <div class="music-titlebar">
     <img class="music-icon" id="music-icon-img" src="images/music-icon.png" alt="" />
     <span id="music-title-label">now playing</span>
+    <span id="track-number">1/1</span>
 </div>
 
 <div class="music-body">
+    <button type="button" id="list-toggle" class="list-toggle-btn" title="track list">
+        <img src="images/icon-list.png" alt="tracks" />
+    </button>
+
     <img id="art" src="images/music-icon.png" alt="" />
 
     <div class="info">
@@ -12,9 +17,31 @@
     </div>
 
     <div class="controls">
-        <button id="prev">◀◀</button>
-        <button id="toggle">▶</button>
-        <button id="next">▶▶</button>
+        <button type="button" id="prev-track" title="previous track">
+            <img src="images/icon-prev-track.png" alt="prev track" />
+        </button>
+        <button type="button" id="prev" title="rewind 10s">
+            <img src="images/icon-rewind.png" alt="rewind" />
+        </button>
+        <button type="button" id="toggle" title="play/pause">
+            <img id="icon-play" src="images/icon-play.png" alt="play" />
+            <img id="icon-pause" src="images/icon-pause.png" alt="pause" style="display: none;" />
+        </button>
+        <button type="button" id="next" title="forward 10s">
+            <img src="images/icon-forward.png" alt="forward" />
+        </button>
+        <button type="button" id="next-track" title="next track">
+            <img src="images/icon-next-track.png" alt="next track" />
+        </button>
+    </div>
+
+    <div class="toggle-row">
+        <button type="button" id="shuffle-toggle" class="mini-toggle" title="shuffle">
+            <img src="images/icon-shuffle.png" alt="shuffle" />
+        </button>
+        <button type="button" id="repeat-toggle" class="mini-toggle" title="repeat">
+            <img src="images/icon-repeat.png" alt="repeat" />
+        </button>
     </div>
 
     <div class="seek-row">
@@ -28,6 +55,8 @@
         <input id="volume" type="range" min="0" max="1" step="0.01" value="0.5" />
         <span id="volume-percent">50%</span>
     </div>
+
+    <div id="track-list"></div>
 
     <audio id="audio"></audio>
 </div>

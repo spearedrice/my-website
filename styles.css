@@ -120,6 +120,10 @@ button:active {
     border-color: #808080 #fff #fff #808080;
 }
 
+button:focus {
+    outline: none;
+}
+
 .os-window {
     display: none;
     position: fixed;
@@ -344,7 +348,7 @@ button:active {
     position: fixed;
     right: 12px;
     bottom: 44px;
-    width: 220px;
+    width: 250px;
     min-height: 40px;
     background: #d4d0c8;
     border: 2px solid;
@@ -352,6 +356,11 @@ button:active {
     box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
     z-index: 1500;
     font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+    transition: width 0.15s ease;
+}
+
+#music-player.expanded {
+    width: 300px;
 }
 
 .music-titlebar {
@@ -372,13 +381,39 @@ button:active {
     image-rendering: pixelated;
 }
 
+.music-titlebar span#music-title-label {
+    flex: 1;
+}
+
+#track-number {
+    font-size: 10px;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.8);
+}
+
 .music-body {
     box-sizing: border-box;
     padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+}
+
+.list-toggle-btn {
+    align-self: flex-start;
+    width: 28px;
+    height: 22px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.list-toggle-btn img {
+    width: 12px;
+    height: 12px;
+    image-rendering: pixelated;
 }
 
 #art {
@@ -406,7 +441,7 @@ button:active {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 190px;
+    max-width: 220px;
 }
 
 #artist {
@@ -415,19 +450,60 @@ button:active {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 190px;
+    max-width: 220px;
 }
 
 .controls {
     display: flex;
-    gap: 4px;
+    gap: 3px;
 }
 
 .controls button {
-    width: 34px;
+    width: 32px;
     height: 26px;
     padding: 0;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.controls button img {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.toggle-row {
+    display: flex;
+    gap: 4px;
+}
+
+.mini-toggle {
+    width: 28px;
+    height: 22px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-color: #fff #808080 #808080 #fff;
+    background: #d4d0c8;
+}
+
+.mini-toggle img {
+    width: 13px;
+    height: 13px;
+    image-rendering: pixelated;
+}
+
+.mini-toggle.active {
+    border-color: #808080 #fff #fff #808080 !important;
+    background: #7fae4a !important;
 }
 
 .seek-row {
@@ -504,4 +580,99 @@ button:active {
     border-color: #fff #808080 #808080 #fff;
     cursor: pointer;
     border-radius: 0;
+}
+
+#track-list {
+    display: none;
+    width: 100%;
+    max-height: 130px;
+    overflow-y: auto;
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    box-sizing: border-box;
+}
+
+#music-player.expanded #track-list {
+    display: block;
+}
+
+.track-item {
+    padding: 5px 8px;
+    font-size: 11px;
+    color: #222;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-item:last-child {
+    border-bottom: 0;
+}
+
+.track-item:hover {
+    background: #e4e0d8;
+}
+
+.track-item.active {
+    background: #000080;
+    color: #fff;
+}
+
+#local-save-notice {
+    position: fixed;
+    left: -260px;
+    bottom: 44px;
+    width: 230px;
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+    z-index: 1500;
+    font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+    transition: left 0.3s ease;
+}
+
+#local-save-notice.visible {
+    left: 12px;
+}
+
+.notice-titlebar {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 4px 4px 8px;
+}
+
+.notice-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notice-titlebar button {
+    flex-shrink: 0;
+    width: 20px;
+    height: 18px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    border-color: #fff #808080 #808080 #fff;
+}
+
+.notice-body {
+    padding: 10px;
+}
+
+.notice-body p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #222;
 }

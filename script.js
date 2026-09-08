@@ -1,8 +1,9 @@
 const apps = [
-    { id: "hello", title: "hello", icon: "images/verity.png", page: "pages/hello.html", autoOpen: true },
-    { id: "about", title: "about me", icon: "images/confused.mpg", page: "pages/about.html", autoOpen: true },
+    { id: "hello", title: "Hello", icon: "images/verity.png", page: "pages/hello.html", autoOpen: true, width: 300, height: 220 },
+    { id: "about", title: "About Me", icon: "images/confused.jpg", page: "pages/about.html", autoOpen: true, width: 260, height: 190 },
     { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
-    { id: "notes", title: "notes", icon: "images/notes.png", page: "pages/notes.html" }
+    { id: "notes", title: "Notes", icon: "images/notes.png", page: "pages/notes.html" },
+    { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" }
 ];
 
 const windowsRoot = document.getElementById("windows");
@@ -16,6 +17,9 @@ apps.forEach(function(app) {
     const win = document.createElement("div");
     win.className = "os-window";
     win.id = "win-" + app.id;
+
+    if (app.width) win.style.width = app.width + "px";
+    if (app.height) win.style.height = app.height + "px";
 
     win.innerHTML =
         '<div class="window-titlebar">' +
@@ -289,21 +293,29 @@ document.addEventListener("mouseup", function() {
     });
 });
 
-let autoOpenOffset = 0;
 apps.forEach(function(app) {
     if (app.autoOpen) {
         openWin(app.id);
-
-        const s = state[app.id];
-        if (s && autoOpenOffset > 0) {
-            const rect = s.el.getBoundingClientRect();
-            s.el.style.left = (rect.left + autoOpenOffset) + "px";
-            s.el.style.top = (rect.top + autoOpenOffset) + "px";
-        }
-
-        autoOpenOffset += 40;
     }
 });
+
+const autoOpenApps = apps.filter(function(a) { return a.autoOpen; });
+
+if (autoOpenApps.length > 0) {
+    const gap = 20;
+    const widths = autoOpenApps.map(function(a) { return state[a.id].el.getBoundingClientRect().width; });
+    const totalWidth = widths.reduce(function(sum, w) { return sum + w; }, 0) + gap * (autoOpenApps.length - 1);
+
+    let cursorX = (window.innerWidth - totalWidth) / 2;
+    const centerY = (window.innerHeight - state[autoOpenApps[0].id].el.getBoundingClientRect().height) / 2;
+
+    autoOpenApps.forEach(function(app, i) {
+        const s = state[app.id];
+        s.el.style.left = cursorX + "px";
+        s.el.style.top = centerY + "px";
+        cursorX += widths[i] + gap;
+    });
+}
 
 const entryOverlay = document.getElementById("entry-overlay");
 
@@ -334,13 +346,19 @@ fetch("pages/music.html")
 
 function initMusicPlayer() {
     const tracks = [
-        "audio/Fall From The Sky.mp3"
+        "audio/Jamie Paige, OK Glass - BIRDBRAIN (feat. Kasane Teto).mp3",
+        "audio/The Larping Tombstome - Looping the Rooms (Larping the Rooms).mp3"
     ];
 
+    const musicPlayerEl = document.getElementById("music-player");
     const audio = document.getElementById("audio");
     const toggle = document.getElementById("toggle");
+    const iconPlay = document.getElementById("icon-play");
+    const iconPause = document.getElementById("icon-pause");
     const prev = document.getElementById("prev");
     const next = document.getElementById("next");
+    const prevTrack = document.getElementById("prev-track");
+    const nextTrack = document.getElementById("next-track");
     const volume = document.getElementById("volume");
     const volumePercent = document.getElementById("volume-percent");
     const seek = document.getElementById("seek");
@@ -348,16 +366,61 @@ function initMusicPlayer() {
     const durationLabel = document.getElementById("duration");
     const trackLabel = document.getElementById("track");
     const artistLabel = document.getElementById("artist");
+    const trackNumberLabel = document.getElementById("track-number");
     const art = document.getElementById("art");
+    const listToggle = document.getElementById("list-toggle");
+    const trackList = document.getElementById("track-list");
+    const shuffleToggle = document.getElementById("shuffle-toggle");
+    const repeatToggle = document.getElementById("repeat-toggle");
 
     if (!audio) {
         console.log("initMusicPlayer: #audio not found");
         return;
     }
 
-    let trackIndex = 0;
+    function setToggleIcon(isPlaying) {
+        iconPlay.style.display = isPlaying ? "none" : "block";
+        iconPause.style.display = isPlaying ? "block" : "none";
+    }
 
-    audio.volume = volume.value;
+    setToggleIcon(false);
+
+    let trackIndex = 0;
+    let shuffleOn = false;
+    let repeatOn = false;
+
+    const savedPrefs = JSON.parse(localStorage.getItem("riceSiteMusicPrefs") || "{}");
+
+    if (typeof savedPrefs.volume === "number") {
+        volume.value = savedPrefs.volume;
+    }
+    if (typeof savedPrefs.shuffle === "boolean") {
+        shuffleOn = savedPrefs.shuffle;
+    }
+    if (typeof savedPrefs.repeat === "boolean") {
+        repeatOn = savedPrefs.repeat;
+    }
+    if (typeof savedPrefs.trackIndex === "number" && savedPrefs.trackIndex < tracks.length) {
+        trackIndex = savedPrefs.trackIndex;
+    }
+
+    function updateToggleVisuals() {
+        shuffleToggle.classList.remove("active");
+        repeatToggle.classList.remove("active");
+        if (shuffleOn) shuffleToggle.classList.add("active");
+        if (repeatOn) repeatToggle.classList.add("active");
+    }
+
+    updateToggleVisuals();
+
+    function savePrefs() {
+        localStorage.setItem("riceSiteMusicPrefs", JSON.stringify({
+            volume: parseFloat(volume.value),
+            shuffle: shuffleOn,
+            repeat: repeatOn,
+            trackIndex: trackIndex
+        }));
+    }
 
     function formatTime(sec) {
         if (!isFinite(sec)) return "0:00";
@@ -366,17 +429,46 @@ function initMusicPlayer() {
         return m + ":" + (s < 10 ? "0" : "") + s;
     }
 
+    function buildTrackList() {
+        trackList.innerHTML = "";
+
+        tracks.forEach(function(path, i) {
+            const item = document.createElement("div");
+            item.className = "track-item";
+            if (i === trackIndex) item.classList.add("active");
+            item.textContent = (i + 1) + ". " + path.split("/").pop().replace(".mp3", "");
+
+            item.addEventListener("click", function() {
+                loadTrack(i);
+                playTrack();
+            });
+
+            trackList.appendChild(item);
+        });
+    }
+
+    function highlightActiveTrack() {
+        const items = trackList.querySelectorAll(".track-item");
+        items.forEach(function(item, i) {
+            item.classList.toggle("active", i === trackIndex);
+        });
+    }
+
     function loadTrack(index) {
         trackIndex = (index + tracks.length) % tracks.length;
         const path = tracks[trackIndex];
 
         audio.src = path;
-        trackLabel.textContent = path.split("/").pop();
+        trackLabel.textContent = "loading...";
         artistLabel.textContent = "—";
+        trackNumberLabel.textContent = (trackIndex + 1) + "/" + tracks.length;
         art.src = "images/music-icon.png";
         seek.value = 0;
         currentTimeLabel.textContent = "0:00";
         durationLabel.textContent = "0:00";
+
+        savePrefs();
+        highlightActiveTrack();
 
         fetch(path)
             .then(function(res) {
@@ -388,12 +480,13 @@ function initMusicPlayer() {
 
                 if (mp3tag.error) {
                     console.log("mp3tag.js failed:", mp3tag.error);
+                    trackLabel.textContent = path.split("/").pop();
                     return;
                 }
 
                 const tags = mp3tag.tags;
 
-                if (tags.title) trackLabel.textContent = tags.title;
+                trackLabel.textContent = tags.title || path.split("/").pop();
                 if (tags.artist) artistLabel.textContent = tags.artist;
 
                 if (tags.v2 && tags.v2.APIC && tags.v2.APIC.length > 0) {
@@ -408,46 +501,76 @@ function initMusicPlayer() {
             })
             .catch(function(error) {
                 console.log("failed to read tags:", error);
+                trackLabel.textContent = path.split("/").pop();
             });
     }
 
+    function playTrack() {
+        audio.play().catch(function(error) {
+            console.log("play failed:", error);
+        });
+    }
+
+    function goToNextTrack() {
+        if (shuffleOn) {
+            let randIndex = Math.floor(Math.random() * tracks.length);
+            if (tracks.length > 1) {
+                while (randIndex === trackIndex) {
+                    randIndex = Math.floor(Math.random() * tracks.length);
+                }
+            }
+            loadTrack(randIndex);
+        } else {
+            loadTrack(trackIndex + 1);
+        }
+        playTrack();
+    }
+
     audio.addEventListener("play", function() {
-        toggle.textContent = "❚❚";
+        setToggleIcon(true);
     });
 
     audio.addEventListener("pause", function() {
-        toggle.textContent = "▶";
+        setToggleIcon(false);
     });
 
     toggle.addEventListener("click", function() {
         if (audio.paused) {
-            audio.play().catch(function(error) {
-                console.log("play failed:", error);
-            });
+            playTrack();
         } else {
             audio.pause();
         }
+        toggle.blur();
     });
 
     prev.addEventListener("click", function() {
-        loadTrack(trackIndex - 1);
-        audio.play().catch(function(error) {
-            console.log("play failed:", error);
-        });
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+        prev.blur();
     });
 
     next.addEventListener("click", function() {
-        loadTrack(trackIndex + 1);
-        audio.play().catch(function(error) {
-            console.log("play failed:", error);
-        });
+        audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+        next.blur();
+    });
+
+    prevTrack.addEventListener("click", function() {
+        loadTrack(trackIndex - 1);
+        playTrack();
+        prevTrack.blur();
+    });
+
+    nextTrack.addEventListener("click", function() {
+        goToNextTrack();
+        nextTrack.blur();
     });
 
     audio.addEventListener("ended", function() {
-        loadTrack(trackIndex + 1);
-        audio.play().catch(function(error) {
-            console.log("play failed:", error);
-        });
+        if (repeatOn) {
+            audio.currentTime = 0;
+            playTrack();
+        } else {
+            goToNextTrack();
+        }
     });
 
     audio.addEventListener("loadedmetadata", function() {
@@ -467,14 +590,46 @@ function initMusicPlayer() {
     volume.addEventListener("input", function() {
         audio.volume = volume.value;
         volumePercent.textContent = Math.round(volume.value * 100) + "%";
+        savePrefs();
     });
 
-    loadTrack(0);
+    shuffleToggle.addEventListener("click", function() {
+        shuffleOn = !shuffleOn;
+        updateToggleVisuals();
+        savePrefs();
+        shuffleToggle.blur();
+    });
+
+    repeatToggle.addEventListener("click", function() {
+        repeatOn = !repeatOn;
+        updateToggleVisuals();
+        savePrefs();
+        repeatToggle.blur();
+    });
+
+    listToggle.addEventListener("click", function() {
+        musicPlayerEl.classList.toggle("expanded");
+        listToggle.blur();
+    });
+
+    buildTrackList();
+    loadTrack(trackIndex);
     volumePercent.textContent = Math.round(volume.value * 100) + "%";
+    audio.volume = volume.value;
 
     if (audioUnlocked) {
-        audio.play().catch(function(error) {
-            console.log("play failed:", error);
-        });
+        playTrack();
     }
 }
+
+const localSaveNotice = document.getElementById("local-save-notice");
+const noticeClose = document.getElementById("notice-close");
+
+if (!localStorage.getItem("riceSiteNoticeSeen")) {
+    localSaveNotice.classList.add("visible");
+}
+
+noticeClose.addEventListener("click", function() {
+    localSaveNotice.classList.remove("visible");
+    localStorage.setItem("riceSiteNoticeSeen", "true");
+});

@@ -7,29 +7,24 @@
         <style>
             body {
                 margin: 0;
-                padding: 18px;
-                background: #ece9d8;
-                font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
-                box-sizing: border-box;
+                background: #000;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
             }
 
-            h1 {
-                margin: 0 0 4px;
-                color: #2b5797;
-                font-size: 28px;
-            }
-
-            p {
-                margin: 8px 0;
-                line-height: 1.5;
-                color: #222;
-                font-size: 14px;
+            video {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
             }
         </style>
     </head>
 
     <body>
-        <h1>Hello!</h1>
-        <p>Welcome to my site!</p>
+        <video src="../videos/verity.mp4" autoplay loop muted playsinline></video>
     </body>
 </html>
