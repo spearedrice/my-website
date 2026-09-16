@@ -15,6 +15,10 @@ body {
     font-size: 14px;
 }
 
+body.backrooms {
+    background: none;
+}
+
 #entry-overlay {
     position: fixed;
     top: 0;
@@ -312,6 +316,8 @@ button:focus {
 }
 
 #desktop-icons {
+    position: relative;
+    z-index: 10;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -675,4 +681,196 @@ button:focus {
     font-size: 11px;
     line-height: 1.4;
     color: #222;
+}
+
+#backrooms-girl,
+#backrooms-still-life {
+    position: fixed;
+    bottom: 30px;
+    left: -200px;
+    width: 140px;
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    image-rendering: pixelated;
+}
+
+#backrooms-still-life {
+    width: 130px;
+}
+
+body.backrooms * {
+    animation: br-flicker 4s infinite;
+}
+
+@keyframes br-flicker {
+    0%, 96%, 100% {
+        text-shadow: none;
+    }
+    97% {
+        text-shadow: 1px 0 0 rgba(255, 0, 0, 0.35), -1px 0 0 rgba(0, 255, 255, 0.35);
+    }
+    98% {
+        text-shadow: none;
+    }
+}
+
+body.backrooms #backrooms-girl {
+    opacity: 0.9;
+    animation: br-walk 14s linear infinite;
+}
+
+body.backrooms #backrooms-still-life {
+    opacity: 0.75;
+    animation: br-walk 14s linear infinite;
+    animation-delay: 2.5s;
+}
+
+@keyframes br-walk {
+    0% {
+        left: -200px;
+    }
+    100% {
+        left: 110%;
+    }
+}
+
+#backrooms-tint {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, #e8d896 0%, #b89a4a 100%);
+    mix-blend-mode: multiply;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+    z-index: 2;
+}
+
+body.backrooms #backrooms-tint {
+    opacity: 0.4;
+}
+
+.backrooms-scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #b09b5e;
+    background-image: url("images/kanerooms.png");
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.backrooms .backrooms-scene {
+    opacity: 1;
+}
+
+body.backrooms .os-window {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms .window-titlebar {
+    background: linear-gradient(90deg, #6b5a1e, #b89a3f);
+}
+
+body.backrooms .music-titlebar {
+    background: linear-gradient(90deg, #6b5a1e, #b89a3f);
+}
+
+body.backrooms .notice-titlebar {
+    background: linear-gradient(90deg, #6b5a1e, #b89a3f);
+}
+
+body.backrooms .taskbar,
+body.backrooms #music-player,
+body.backrooms #local-save-notice {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms .window-buttons button,
+body.backrooms .mini-toggle,
+body.backrooms .list-toggle-btn {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms .taskbar-item {
+    background: #cabb85;
+    border-color: #6b5a1e #f0e4b0 #f0e4b0 #6b5a1e;
+}
+
+body.backrooms .taskbar-item.active {
+    background: #b6a56b;
+}
+
+body.backrooms button {
+    background: #cabb85;
+    color: #2a2210;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms button:hover {
+    background: #d8c996;
+}
+
+body.backrooms button:active {
+    border-color: #6b5a1e #f0e4b0 #f0e4b0 #6b5a1e;
+}
+
+body.backrooms #seek,
+body.backrooms #volume {
+    background: #8a7645;
+    border-color: #6b5a1e #f0e4b0 #f0e4b0 #6b5a1e;
+}
+
+body.backrooms #seek::-webkit-slider-thumb,
+body.backrooms #volume::-webkit-slider-thumb {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms #seek::-moz-range-thumb,
+body.backrooms #volume::-moz-range-thumb {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms .track-item {
+    background: #f2e9c8;
+    color: #2a2210;
+    border-bottom-color: #b6a56b;
+}
+
+body.backrooms .track-item:hover {
+    background: #e5d9a8;
+}
+
+body.backrooms .track-item.active {
+    background: #6b5a1e;
+    color: #f2e9c8;
+}
+
+body.backrooms #track-list {
+    background: #f2e9c8;
+    border-color: #6b5a1e #f0e4b0 #f0e4b0 #6b5a1e;
+}
+
+body.backrooms .desktop-icon span,
+body.backrooms .notice-body p,
+body.backrooms #track,
+body.backrooms #artist,
+body.backrooms #track-number,
+body.backrooms .taskbar-item span,
+body.backrooms .seek-row span,
+body.backrooms .volume-label,
+body.backrooms #volume-percent {
+    color: #2a1f0d;
 }
