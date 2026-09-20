@@ -341,26 +341,155 @@ body.backrooms #taskbar-clock {
     color: #2a1f0d;
 }
 
-#desktop-icons {
+.properties-titlebar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 10px 15px 20px;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 5px 8px;
+}
+
+.properties-titlebar .properties-close {
+    box-sizing: border-box;
+    width: 20px;
+    height: 18px;
+    padding: 0;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    background: #d4d0c8;
+    color: #000;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.properties-titlebar .properties-close:active {
+    border-color: #808080 #fff #fff #808080;
+}
+
+.properties-body {
+    padding: 14px;
+}
+
+.properties-body p {
+    margin: 0 0 8px;
+    line-height: 1.4;
+    color: #222;
+}
+
+.properties-body p:last-child {
+    margin-bottom: 0;
+}
+
+.properties-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 12px 12px;
+}
+
+.properties-footer .properties-ok {
+    padding: 5px 18px;
+}
+
+body.backrooms .properties-dialog {
+    background: #cabb85;
+    border-color: #6b5a1e;
+}
+
+body.backrooms .properties-titlebar {
+    background: linear-gradient(90deg, #6b5a1e, #b89a3f);
+}
+
+body.backrooms .properties-body p {
+    color: #2a1f0d;
+}
+
+.context-menu {
+    position: fixed;
+    min-width: 170px;
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+    z-index: 5000;
+    font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+    font-size: 12px;
+    padding: 2px;
+    user-select: none;
+}
+
+.context-menu-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #000;
+    white-space: nowrap;
+}
+
+.context-menu-item:hover {
+    background: #000080;
+    color: #fff;
+}
+
+.context-menu-separator {
+    height: 0;
+    margin: 3px 2px;
+    border-bottom: 1px solid #808080;
+    border-top: 1px solid #fff;
+}
+
+body.backrooms .context-menu {
+    background: #cabb85;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+body.backrooms .context-menu-item {
+    color: #2a1f0d;
+}
+
+body.backrooms .context-menu-item:hover {
+    background: #6b5a1e;
+    color: #f2e9c8;
+}
+
+body.backrooms .context-menu-separator {
+    border-bottom-color: #6b5a1e;
+    border-top-color: #f0e4b0;
+}
+
+#desktop-icons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 34px;
+    overflow: hidden;
 }
 
 .desktop-icon {
+    position: absolute;
     width: 72px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    cursor: pointer;
+    cursor: grab;
     user-select: none;
+    touch-action: none;
+}
+
+.desktop-icon.dragging {
+    cursor: grabbing;
+    z-index: 10;
+    opacity: 0.85;
 }
 
 .desktop-icon img {
     width: 40px;
     height: 40px;
+    pointer-events: none;
 }
 
 .desktop-icon span {
@@ -368,6 +497,7 @@ body.backrooms #taskbar-clock {
     font-size: 12px;
     text-align: center;
     line-height: 1.2;
+    pointer-events: none;
 }
 
 .desktop-icon:hover span {
