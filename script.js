@@ -6,6 +6,8 @@ const apps = [
     { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" }
 ];
 
+const originalPageTitle = document.title;
+
 const windowsRoot = document.getElementById("windows");
 const taskbar = document.getElementById("taskbar");
 
@@ -486,7 +488,11 @@ if (desktopIcons) {
 }
 
 const backroomsBrandingOverrides = {
-    hello: { icon: "images/trash.png", title: "NO SIGNAL" }
+    hello: { icon: "images/trash.png", title: "NO SIGNAL" },
+    about: { title: "WHO ARE YOU" },
+    fun: { title: "STILL HERE?" },
+    notes: { title: "..." },
+    credits: { title: "THE EXIT" }
 };
 
 function applyBackroomsBranding(active) {
@@ -494,15 +500,13 @@ function applyBackroomsBranding(active) {
         const override = backroomsBrandingOverrides[id];
         const desktopEls = desktopIconEls[id];
         const s = state[id];
+        if (!desktopEls) return;
 
-        const icon = active ? override.icon : (desktopEls ? desktopEls.defaultIcon : null);
-        const title = active ? override.title : (desktopEls ? desktopEls.defaultTitle : null);
-        if (icon === null || title === null) return;
+        const icon = active ? (override.icon || desktopEls.defaultIcon) : desktopEls.defaultIcon;
+        const title = active ? (override.title || desktopEls.defaultTitle) : desktopEls.defaultTitle;
 
-        if (desktopEls) {
-            desktopEls.img.src = icon;
-            desktopEls.label.textContent = title;
-        }
+        desktopEls.img.src = icon;
+        desktopEls.label.textContent = title;
 
         if (s) {
             if (s.titlebarIcon) s.titlebarIcon.src = icon;
@@ -1203,6 +1207,16 @@ function initMusicPlayer() {
         });
     }
 
+    function syncTabTitle() {
+        if (!trackLabel) return;
+
+        if (audio.paused) {
+            document.title = originalPageTitle;
+        } else {
+            document.title = "♪ " + trackLabel.textContent;
+        }
+    }
+
     function loadTrack(index) {
         trackIndex =
             (index + tracks.length) % tracks.length;
@@ -1214,6 +1228,8 @@ function initMusicPlayer() {
         if (trackLabel) trackLabel.textContent = path.split("/").pop().replace(".mp3", "");
         if (artistLabel) artistLabel.textContent = "—";
         if (trackNumberLabel) trackNumberLabel.textContent = (trackIndex + 1) + "/" + tracks.length;
+
+        syncTabTitle();
 
         if (currentArtUrl) {
             URL.revokeObjectURL(currentArtUrl);
@@ -1252,6 +1268,7 @@ function initMusicPlayer() {
 
                 if (tags.title && trackLabel) {
                     trackLabel.textContent = tags.title;
+                    syncTabTitle();
                 }
 
                 if (tags.artist && artistLabel) {
@@ -1310,10 +1327,12 @@ function initMusicPlayer() {
 
     audio.addEventListener("play", function() {
         setToggleIcon(true);
+        syncTabTitle();
     });
 
     audio.addEventListener("pause", function() {
         setToggleIcon(false);
+        syncTabTitle();
     });
 
     if (toggle) {
