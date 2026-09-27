@@ -538,6 +538,67 @@ function getPoint(e) {
     };
 }
 
+function loadWindowStates() {
+    try {
+        return JSON.parse(localStorage.getItem("riceSiteWindowStates") || "{}");
+    } catch (error) {
+        localStorage.removeItem("riceSiteWindowStates");
+        return {};
+    }
+}
+
+function saveWindowState(id) {
+    const s = state[id];
+    if (!s) return;
+
+    const states = loadWindowStates();
+    const prev = states[id] || {};
+
+    const isOpen = s.el.style.display !== "none" && s.el.style.display !== "";
+    const isMinimized = s.el.classList.contains("minimized");
+    const rect = s.el.getBoundingClientRect();
+
+    const left = parseFloat(s.el.style.left);
+    const top = parseFloat(s.el.style.top);
+    const width = isMinimized && isFinite(prev.width) ? prev.width : rect.width;
+    const height = isMinimized && isFinite(prev.height) ? prev.height : rect.height;
+
+    if (!isFinite(left) || !isFinite(top) || !isFinite(width) || !isFinite(height)) return;
+
+    states[id] = {
+        open: isOpen,
+        minimized: isMinimized,
+        maximized: !!s.maximized,
+        left: left,
+        top: top,
+        width: width,
+        height: height
+    };
+
+    localStorage.setItem("riceSiteWindowStates", JSON.stringify(states));
+}
+
+function setMaximizedSilently(id) {
+    const s = state[id];
+    if (!s) return;
+
+    const rect = s.el.getBoundingClientRect();
+
+    s.savedRect = {
+        left: rect.left + "px",
+        top: rect.top + "px",
+        width: rect.width + "px",
+        height: rect.height + "px"
+    };
+
+    s.el.style.transform = "none";
+    s.el.style.left = "0px";
+    s.el.style.top = "0px";
+    s.el.style.width = "100vw";
+    s.el.style.height = "calc(100vh - 34px)";
+    s.maximized = true;
+}
+
 function centerWin(id) {
     const s = state[id];
     if (!s) return;
@@ -549,7 +610,8 @@ function centerWin(id) {
     s.el.style.top = (window.innerHeight - rect.height) / 2 + "px";
 }
 
-function openWin(id) {
+function openWin(id, options) {
+    const opts = options || {};
     const s = state[id];
     if (!s) return;
 
@@ -557,7 +619,7 @@ function openWin(id) {
         s.el.style.display === "none" ||
         s.el.style.display === "";
 
-    if (wasHidden) playOpenSound();
+    if (wasHidden && !opts.silent) playOpenSound();
 
     s.el.style.display = "block";
     s.el.classList.remove("minimized");
@@ -569,6 +631,8 @@ function openWin(id) {
 
     focusWin(id);
     updateTaskbar(id);
+
+    if (!opts.silent) saveWindowState(id);
 }
 
 function closeWin(id) {
@@ -585,6 +649,78 @@ function closeWin(id) {
         s.taskIcon = null;
         s.taskLabel = null;
     }
+
+    saveWindowState(id);
+}
+
+function getTaskbarTarget(s) {
+    if (s.taskItem) {
+        const taskRect = s.taskItem.getBoundingClientRect();
+        return {
+            x: taskRect.left + taskRect.width / 2,
+            y: taskRect.top + taskRect.height / 2
+        };
+    }
+
+    return {
+        x: window.innerWidth / 2,
+        y: window.innerHeight
+    };
+}
+
+function animateMinimize(id, minimizing) {
+    const s = state[id];
+    if (!s) return;
+
+    const el = s.el;
+
+    if (minimizing) {
+        const rect = el.getBoundingClientRect();
+        const target = getTaskbarTarget(s);
+
+        const dx = target.x - (rect.left + rect.width / 2);
+        const dy = target.y - (rect.top + rect.height / 2);
+
+        el.style.setProperty("--mz-dx", dx + "px");
+        el.style.setProperty("--mz-dy", dy + "px");
+
+        function onEnd(e) {
+            if (e.target !== el || e.propertyName !== "transform") return;
+            el.removeEventListener("transitionend", onEnd);
+            el.classList.remove("minimizing-out");
+            el.classList.add("minimized");
+            updateTaskbar(id);
+            saveWindowState(id);
+        }
+
+        el.addEventListener("transitionend", onEnd);
+
+        requestAnimationFrame(function() {
+            el.classList.add("minimizing-out");
+        });
+    } else {
+        el.classList.remove("minimized");
+
+        const rect = el.getBoundingClientRect();
+        const target = getTaskbarTarget(s);
+
+        const dx = target.x - (rect.left + rect.width / 2);
+        const dy = target.y - (rect.top + rect.height / 2);
+
+        el.style.setProperty("--mz-dx", dx + "px");
+        el.style.setProperty("--mz-dy", dy + "px");
+
+        el.style.transition = "none";
+        el.classList.add("minimizing-out");
+
+        void el.offsetWidth;
+
+        el.style.transition = "";
+        el.classList.remove("minimizing-out");
+
+        updateTaskbar(id);
+        saveWindowState(id);
+    }
 }
 
 function minWin(id) {
@@ -593,8 +729,8 @@ function minWin(id) {
 
     playClickSound();
 
-    s.el.classList.toggle("minimized");
-    updateTaskbar(id);
+    const isCurrentlyMinimized = s.el.classList.contains("minimized");
+    animateMinimize(id, !isCurrentlyMinimized);
 }
 
 function maxWin(id) {
@@ -628,6 +764,7 @@ function maxWin(id) {
     }
 
     focusWin(id);
+    saveWindowState(id);
 }
 
 function focusWin(id) {
@@ -823,9 +960,16 @@ document.addEventListener("touchmove", handleMove, {
 
 function handleInteractionEnd() {
     Object.keys(state).forEach(function(id) {
-        state[id].dragging = false;
-        state[id].resizing = false;
-        state[id].el.classList.remove("interacting");
+        const s = state[id];
+        const wasInteracting = s.dragging || s.resizing;
+
+        s.dragging = false;
+        s.resizing = false;
+        s.el.classList.remove("interacting");
+
+        if (wasInteracting) {
+            saveWindowState(id);
+        }
     });
 }
 
@@ -833,43 +977,84 @@ document.addEventListener("mouseup", handleInteractionEnd);
 document.addEventListener("touchend", handleInteractionEnd);
 document.addEventListener("touchcancel", handleInteractionEnd);
 
+const savedWindowStates = loadWindowStates();
+const hasSavedWindowStates = Object.keys(savedWindowStates).length > 0;
+
 apps.forEach(function(app) {
-    if (app.autoOpen) {
+    const saved = savedWindowStates[app.id];
+
+    if (saved) {
+        if (saved.open) {
+            openWin(app.id, { silent: true });
+
+            const s = state[app.id];
+
+            if (isFinite(saved.width) && saved.width >= 300) {
+                s.el.style.width = saved.width + "px";
+            }
+
+            if (isFinite(saved.height) && saved.height >= 200) {
+                s.el.style.height = saved.height + "px";
+            }
+
+            if (isFinite(saved.left) && isFinite(saved.top)) {
+                const clampedLeft = Math.max(-50, Math.min(saved.left, window.innerWidth - 50));
+                const clampedTop = Math.max(0, Math.min(saved.top, window.innerHeight - 50));
+
+                s.el.style.transform = "none";
+                s.el.style.left = clampedLeft + "px";
+                s.el.style.top = clampedTop + "px";
+            }
+
+            if (saved.maximized) {
+                setMaximizedSilently(app.id);
+            }
+
+            if (saved.minimized) {
+                s.el.classList.add("minimized");
+            }
+
+            updateTaskbar(app.id);
+            saveWindowState(app.id);
+        }
+    } else if (app.autoOpen) {
         openWin(app.id);
     }
 });
 
-const autoOpenApps = apps.filter(function(a) {
-    return a.autoOpen;
-});
-
-if (autoOpenApps.length > 0) {
-    const gap = 20;
-
-    const widths = autoOpenApps.map(function(a) {
-        return state[a.id].el.getBoundingClientRect().width;
+if (!hasSavedWindowStates) {
+    const autoOpenApps = apps.filter(function(a) {
+        return a.autoOpen;
     });
 
-    const totalWidth =
-        widths.reduce(function(sum, w) {
-            return sum + w;
-        }, 0) +
-        gap * (autoOpenApps.length - 1);
+    if (autoOpenApps.length > 0) {
+        const gap = 20;
 
-    let cursorX = (window.innerWidth - totalWidth) / 2;
+        const widths = autoOpenApps.map(function(a) {
+            return state[a.id].el.getBoundingClientRect().width;
+        });
 
-    const centerY =
-        (window.innerHeight -
-            state[autoOpenApps[0].id].el.getBoundingClientRect().height) / 2;
+        const totalWidth =
+            widths.reduce(function(sum, w) {
+                return sum + w;
+            }, 0) +
+            gap * (autoOpenApps.length - 1);
 
-    autoOpenApps.forEach(function(app, i) {
-        const s = state[app.id];
+        let cursorX = (window.innerWidth - totalWidth) / 2;
 
-        s.el.style.left = cursorX + "px";
-        s.el.style.top = centerY + "px";
+        const centerY =
+            (window.innerHeight -
+                state[autoOpenApps[0].id].el.getBoundingClientRect().height) / 2;
 
-        cursorX += widths[i] + gap;
-    });
+        autoOpenApps.forEach(function(app, i) {
+            const s = state[app.id];
+
+            s.el.style.left = cursorX + "px";
+            s.el.style.top = centerY + "px";
+
+            cursorX += widths[i] + gap;
+        });
+    }
 }
 
 const entryOverlay = document.getElementById("entry-overlay");

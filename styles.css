@@ -143,6 +143,13 @@ button:focus {
     border-color: #fff #808080 #808080 #fff;
     box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
     z-index: 1000;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.os-window.minimizing-out {
+    transform: translate(var(--mz-dx, 0px), var(--mz-dy, 0px)) scale(0.05);
+    opacity: 0;
+    pointer-events: none;
 }
 
 .window-titlebar {
