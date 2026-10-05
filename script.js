@@ -6,6 +6,25 @@ const apps = [
     { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" }
 ];
 
+const FRAME_SPEEDS = { slow: 650, normal: 350, fast: 150 };
+
+const petPack = {
+    walkFrames: [
+        { src: "shimeji/shime1.png", speed: "normal" },
+        { src: "shimeji/shime2.png", speed: "fast" }
+    ],
+    idleFrames: [
+        { src: "shimeji/shime15.png", speed: "slow" },
+        { src: "shimeji/shime16.png", speed: "slow" },
+        { src: "shimeji/shime17.png", speed: "normal" },
+        { src: "shimeji/shime26.png", speed: "slow" },
+        { src: "shimeji/shime27.png", speed: "slow" }
+    ],
+    reactFrame: "shimeji/shime42.png",
+    lines: ["*noises*", "...", "miku dayo", "*singing*"],
+    width: 64
+};
+
 const originalPageTitle = document.title;
 
 const windowsRoot = document.getElementById("windows");
@@ -460,6 +479,29 @@ function resetIconPosition(app) {
     els.el.style.top = pos.top + "px";
 }
 
+function shutDown() {
+    closeContextMenu();
+    playCloseSound();
+
+    const overlay = document.createElement("div");
+    overlay.id = "shutdown-overlay";
+    overlay.innerHTML = '<p>It is now safe to turn off your computer.</p>' +
+        '<p class="shutdown-hint">click anywhere to restart</p>';
+
+    document.body.appendChild(overlay);
+
+    const REBOOT_DELAY_MS = 3 * 60 * 1000;
+
+    const rebootTimer = setTimeout(function() {
+        location.reload();
+    }, REBOOT_DELAY_MS);
+
+    overlay.addEventListener("click", function() {
+        clearTimeout(rebootTimer);
+        location.reload();
+    });
+}
+
 if (desktopIcons) {
     desktopIcons.addEventListener("contextmenu", function(e) {
         e.preventDefault();
@@ -481,7 +523,9 @@ if (desktopIcons) {
                 { label: "Arrange Icons", onClick: resetAllIconPositions },
                 { label: "Refresh", onClick: function() { location.reload(); } },
                 { separator: true },
-                { label: "Properties", onClick: showPropertiesDialog }
+                { label: "Properties", onClick: showPropertiesDialog },
+                { separator: true },
+                { label: "Shut Down...", onClick: shutDown }
             ]);
         }
     });
@@ -576,6 +620,32 @@ function saveWindowState(id) {
     };
 
     localStorage.setItem("riceSiteWindowStates", JSON.stringify(states));
+}
+
+function sanitizeWindowStates(states) {
+    const autoOpenIds = apps
+        .filter(function(a) { return a.autoOpen; })
+        .map(function(a) { return a.id; });
+
+    if (autoOpenIds.length > 1) {
+        const positions = autoOpenIds
+            .map(function(id) { return states[id]; })
+            .filter(function(s) { return s && s.open && isFinite(s.left) && isFinite(s.top); });
+
+        for (let i = 0; i < positions.length; i++) {
+            for (let j = i + 1; j < positions.length; j++) {
+                const a = positions[i];
+                const b = positions[j];
+
+                if (Math.abs(a.left - b.left) < 40 && Math.abs(a.top - b.top) < 40) {
+                    localStorage.removeItem("riceSiteWindowStates");
+                    return {};
+                }
+            }
+        }
+    }
+
+    return states;
 }
 
 function setMaximizedSilently(id) {
@@ -977,7 +1047,7 @@ document.addEventListener("mouseup", handleInteractionEnd);
 document.addEventListener("touchend", handleInteractionEnd);
 document.addEventListener("touchcancel", handleInteractionEnd);
 
-const savedWindowStates = loadWindowStates();
+const savedWindowStates = sanitizeWindowStates(loadWindowStates());
 const hasSavedWindowStates = Object.keys(savedWindowStates).length > 0;
 
 apps.forEach(function(app) {
@@ -1691,4 +1761,171 @@ function startTaskbarClock() {
     setInterval(updateClock, 15000);
 }
 
+function initDesktopPet() {
+    if (!desktopIcons) return;
+
+    const pet = document.createElement("div");
+    pet.id = "desktop-pet";
+
+    const petImg = document.createElement("img");
+    petImg.src = petPack.walkFrames[0];
+    petImg.alt = "";
+    pet.appendChild(petImg);
+
+    desktopIcons.appendChild(pet);
+
+    const PET_BOX = 72;
+    const FLOOR_GAP = 3;
+
+    let x = 40;
+    let y = 0;
+    let dir = 1;
+    let frameIndex = 0;
+    let frameElapsed = 0;
+    let mode = "walk";
+    let modeTimer = 0;
+    let modeDuration = 3000 + Math.random() * 3000;
+    let walkSpeed = 0.03 + Math.random() * 0.025;
+    let velocity = 0;
+    let pauseTimer = 0;
+    let bobPhase = 0;
+
+    function bounds() {
+        const rect = desktopIcons.getBoundingClientRect();
+        return { w: rect.width, h: rect.height };
+    }
+
+    function floorY() {
+        return Math.max(0, bounds().h - PET_BOX - FLOOR_GAP);
+    }
+
+    y = floorY();
+    pet.style.left = x + "px";
+    pet.style.top = y + "px";
+
+    function pickNewMode() {
+        mode = mode === "walk" ? "idle" : "walk";
+        modeTimer = 0;
+        modeDuration = mode === "walk" ? 2500 + Math.random() * 3500 : 2000 + Math.random() * 2000;
+        frameIndex = 0;
+        frameElapsed = 0;
+
+        if (mode === "walk") {
+            dir = Math.random() < 0.5 ? -1 : 1;
+            walkSpeed = 0.03 + Math.random() * 0.025;
+            velocity = 0;
+            pauseTimer = 0;
+        } else {
+            pet.style.top = y + "px";
+        }
+    }
+
+    function tick(dt) {
+        modeTimer += dt;
+
+        if (modeTimer >= modeDuration) {
+            pickNewMode();
+        }
+
+        const frames = mode === "walk" ? petPack.walkFrames : petPack.idleFrames;
+
+        frameElapsed += dt;
+        const currentDuration = FRAME_SPEEDS[frames[frameIndex].speed] || FRAME_SPEEDS.normal;
+
+        if (frameElapsed >= currentDuration) {
+            frameElapsed -= currentDuration;
+            frameIndex = (frameIndex + 1) % frames.length;
+        }
+
+        petImg.src = frames[frameIndex].src;
+
+        if (mode === "walk") {
+            const b = bounds();
+
+            if (pauseTimer > 0) {
+                pauseTimer -= dt;
+                velocity *= 0.85;
+            } else {
+                const targetVelocity = dir * walkSpeed;
+                velocity += (targetVelocity - velocity) * Math.min(1, dt / 220);
+            }
+
+            x += velocity * dt;
+            bobPhase += dt;
+
+            const bobOffset = pauseTimer > 0 ? 0 : -Math.abs(Math.sin(bobPhase / 140)) * 3;
+            pet.style.top = (y + bobOffset) + "px";
+
+            if (x <= 0) {
+                x = 0;
+                dir = 1;
+                pauseTimer = 260 + Math.random() * 220;
+            }
+
+            if (x >= b.w - petPack.width) {
+                x = b.w - petPack.width;
+                dir = -1;
+                pauseTimer = 260 + Math.random() * 220;
+            }
+
+            pet.style.left = x + "px";
+            pet.style.transform = dir === -1 ? "scaleX(1)" : "scaleX(-1)";
+        }
+    }
+
+    let lastTime = performance.now();
+
+    function loop(now) {
+        const dt = Math.min(now - lastTime, 50);
+        lastTime = now;
+        tick(dt);
+        requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+    let resizeTimer = null;
+
+    window.addEventListener("resize", function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            y = floorY();
+            if (mode === "idle") {
+                pet.style.top = y + "px";
+            }
+        }, 150);
+    });
+
+    let bubbleTimer = null;
+
+    pet.addEventListener("click", function(e) {
+        e.stopPropagation();
+
+        const prevSrc = petImg.src;
+        petImg.src = petPack.reactFrame;
+        setTimeout(function() {
+            petImg.src = prevSrc;
+        }, 400);
+
+        let bubble = document.getElementById("pet-bubble");
+
+        if (!bubble) {
+            bubble = document.createElement("div");
+            bubble.id = "pet-bubble";
+            desktopIcons.appendChild(bubble);
+        }
+
+        bubble.textContent = petPack.lines[Math.floor(Math.random() * petPack.lines.length)];
+        bubble.style.left = x + "px";
+        bubble.style.top = (y - 26) + "px";
+        bubble.style.display = "block";
+
+        clearTimeout(bubbleTimer);
+        bubbleTimer = setTimeout(function() {
+            bubble.style.display = "none";
+        }, 2200);
+    });
+}
+
+initDesktopPet();
 startTaskbarClock();
