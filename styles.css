@@ -294,6 +294,28 @@ button:focus {
     z-index: 2000;
 }
 
+#start-button {
+    flex-shrink: 0;
+    height: 26px;
+    padding: 0 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+body.backrooms #start-button {
+    background: #cabb85;
+    color: #2a2210;
+    border-color: #f0e4b0 #6b5a1e #6b5a1e #f0e4b0;
+}
+
+.context-menu-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+}
+
 #taskbar-items {
     display: flex;
     align-items: center;

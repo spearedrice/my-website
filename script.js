@@ -36,6 +36,14 @@ let audioUnlocked = false;
 let topZ = 1000;
 let audioCtx = null;
 
+const startButton = document.createElement("button");
+startButton.id = "start-button";
+startButton.type = "button";
+startButton.textContent = "Start";
+if (taskbar) {
+    taskbar.appendChild(startButton);
+}
+
 const taskbarItems = document.createElement("div");
 taskbarItems.id = "taskbar-items";
 if (taskbar) {
@@ -411,10 +419,24 @@ function openContextMenu(x, y, items) {
 
         const entry = document.createElement("div");
         entry.className = "context-menu-item";
-        entry.textContent = item.label;
         entry.style.padding = "5px 10px";
         entry.style.cursor = "pointer";
         entry.style.whiteSpace = "nowrap";
+        entry.style.display = "flex";
+        entry.style.alignItems = "center";
+        entry.style.gap = "8px";
+
+        if (item.icon) {
+            const icon = document.createElement("img");
+            icon.src = item.icon;
+            icon.alt = "";
+            icon.className = "context-menu-icon";
+            entry.appendChild(icon);
+        }
+
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = item.label;
+        entry.appendChild(labelSpan);
 
         entry.addEventListener("click", function(e) {
             e.stopPropagation();
@@ -499,6 +521,33 @@ function shutDown() {
     overlay.addEventListener("click", function() {
         clearTimeout(rebootTimer);
         location.reload();
+    });
+}
+
+if (startButton) {
+    startButton.addEventListener("click", function(e) {
+        e.stopPropagation();
+        playClickSound();
+
+        const rect = startButton.getBoundingClientRect();
+
+        const menuItems = apps.map(function(app) {
+            return {
+                label: app.title,
+                icon: app.icon,
+                onClick: function() { openWin(app.id); }
+            };
+        });
+
+        menuItems.push({ separator: true });
+        menuItems.push({ label: "Shut Down...", onClick: shutDown });
+
+        openContextMenu(rect.left, rect.top - 4, menuItems);
+
+        if (activeContextMenu) {
+            const menuRect = activeContextMenu.getBoundingClientRect();
+            activeContextMenu.style.top = (rect.top - menuRect.height - 4) + "px";
+        }
     });
 }
 
@@ -1775,7 +1824,7 @@ function initDesktopPet() {
     desktopIcons.appendChild(pet);
 
     const PET_BOX = 72;
-    const FLOOR_GAP = 3;
+    const FLOOR_GAP = 1;
 
     let x = 40;
     let y = 0;
