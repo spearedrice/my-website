@@ -1056,6 +1056,176 @@ body.backrooms #volume-percent {
     color: #2a1f0d;
 }
 
+body.theme-dark {
+    background-color: #1e1e1e;
+    background-image: none;
+}
+
+body.theme-dark .os-window,
+body.theme-dark .taskbar,
+body.theme-dark #music-player,
+body.theme-dark #local-save-notice,
+body.theme-dark .context-menu,
+body.theme-dark .properties-dialog {
+    background: #2b2b2b;
+    border-color: #555 #000 #000 #555;
+}
+
+body.theme-dark .window-titlebar,
+body.theme-dark .music-titlebar,
+body.theme-dark .notice-titlebar,
+body.theme-dark .properties-titlebar {
+    background: linear-gradient(90deg, #202020, #3a3a3a);
+}
+
+body.theme-dark button,
+body.theme-dark #start-button,
+body.theme-dark .window-buttons button,
+body.theme-dark .mini-toggle,
+body.theme-dark .list-toggle-btn,
+body.theme-dark .properties-close,
+body.theme-dark .properties-ok {
+    background: #3a3a3a;
+    color: #ddd;
+    border-color: #555 #000 #000 #555;
+}
+
+body.theme-dark .taskbar-item {
+    background: #2b2b2b;
+    color: #ddd;
+    border-color: #000 #555 #555 #000;
+}
+
+body.theme-dark .taskbar-item.active {
+    background: #444;
+}
+
+body.theme-dark .desktop-icon span,
+body.theme-dark #track,
+body.theme-dark #artist,
+body.theme-dark #track-number,
+body.theme-dark .notice-body p,
+body.theme-dark .properties-body p,
+body.theme-dark .context-menu-item,
+body.theme-dark #taskbar-clock,
+body.theme-dark .seek-row span,
+body.theme-dark .volume-label,
+body.theme-dark #volume-percent {
+    color: #ddd;
+}
+
+body.theme-dark .track-item {
+    background: #333;
+    color: #ddd;
+    border-bottom-color: #444;
+}
+
+body.theme-dark .track-item.active {
+    background: #555;
+}
+
+body.theme-miku {
+    background-color: #86cecb;
+    background-image: none;
+}
+
+body.theme-miku .os-window,
+body.theme-miku .taskbar,
+body.theme-miku #music-player,
+body.theme-miku #local-save-notice,
+body.theme-miku .context-menu,
+body.theme-miku .properties-dialog {
+    background: #bec8d1;
+    border-color: #fff #373b3e #373b3e #fff;
+}
+
+body.theme-miku .window-titlebar,
+body.theme-miku .music-titlebar,
+body.theme-miku .notice-titlebar,
+body.theme-miku .properties-titlebar {
+    background: linear-gradient(90deg, #137a7f, #373b3e);
+}
+
+body.theme-miku button,
+body.theme-miku #start-button,
+body.theme-miku .window-buttons button,
+body.theme-miku .mini-toggle,
+body.theme-miku .list-toggle-btn,
+body.theme-miku .properties-close,
+body.theme-miku .properties-ok {
+    background: #bec8d1;
+    color: #373b3e;
+    border-color: #fff #373b3e #373b3e #fff;
+}
+
+body.theme-miku button:hover,
+body.theme-miku #start-button:hover,
+body.theme-miku .window-buttons button:hover {
+    background: #86cecb;
+}
+
+body.theme-miku button:active {
+    border-color: #373b3e #fff #fff #373b3e;
+}
+
+body.theme-miku .mini-toggle.active {
+    background: #e12885 !important;
+    border-color: #373b3e #fff #fff #373b3e !important;
+}
+
+body.theme-miku .taskbar-item {
+    background: #bec8d1;
+    color: #373b3e;
+    border-color: #373b3e #fff #fff #373b3e;
+}
+
+body.theme-miku .taskbar-item:hover {
+    background: #86cecb;
+}
+
+body.theme-miku .taskbar-item.active {
+    background: #86cecb;
+    border-color: #fff #373b3e #373b3e #fff;
+}
+
+body.theme-miku .context-menu-item {
+    color: #373b3e;
+}
+
+body.theme-miku .context-menu-item:hover {
+    background: #137a7f;
+    color: #fff;
+}
+
+body.theme-miku .desktop-icon span {
+    color: #373b3e;
+}
+
+body.theme-miku .track-item {
+    background: #fff;
+    color: #373b3e;
+    border-bottom-color: #bec8d1;
+}
+
+body.theme-miku .track-item:hover {
+    background: #86cecb;
+}
+
+body.theme-miku .track-item.active {
+    background: #e12885;
+    color: #fff;
+}
+
+body.theme-miku #seek::-webkit-slider-thumb,
+body.theme-miku #volume::-webkit-slider-thumb {
+    background: #bec8d1;
+}
+
+body.theme-miku #seek::-moz-range-thumb,
+body.theme-miku #volume::-moz-range-thumb {
+    background: #bec8d1;
+}
+
 #shutdown-overlay {
     position: fixed;
     inset: 0;

@@ -3,7 +3,8 @@ const apps = [
     { id: "about", title: "About Me", icon: "images/confused.jpg", page: "pages/about.html", autoOpen: true, width: 260, height: 190 },
     { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
     { id: "notes", title: "Notes", icon: "images/notes.png", page: "pages/notes.html" },
-    { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" }
+    { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" },
+    { id: "themes", title: "Display", icon: "images/theme.png", page: "pages/themes.html" }
 ];
 
 const FRAME_SPEEDS = { slow: 650, normal: 350, fast: 150 };
@@ -24,6 +25,29 @@ const petPack = {
     lines: ["*noises*", "...", "miku dayo", "*singing*"],
     width: 64
 };
+
+const THEME_CLASSES = ["theme-dark", "theme-miku"];
+
+function setSiteTheme(theme) {
+    THEME_CLASSES.forEach(function(cls) {
+        document.body.classList.remove(cls);
+    });
+
+    if (theme === "dark" || theme === "miku") {
+        document.body.classList.add("theme-" + theme);
+    }
+
+    localStorage.setItem("riceSiteTheme", theme || "");
+}
+
+function getSiteTheme() {
+    return localStorage.getItem("riceSiteTheme") || "";
+}
+
+window.setSiteTheme = setSiteTheme;
+window.getSiteTheme = getSiteTheme;
+
+setSiteTheme(getSiteTheme());
 
 const originalPageTitle = document.title;
 
