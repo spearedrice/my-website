@@ -1226,6 +1226,21 @@ body.theme-miku #volume::-moz-range-thumb {
     background: #bec8d1;
 }
 
+#wallpaper {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+body.has-wallpaper:not(.backrooms) .desktop-icon span {
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.7);
+}
+
 #shutdown-overlay {
     position: fixed;
     inset: 0;

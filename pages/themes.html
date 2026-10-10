@@ -13,12 +13,17 @@
                 font-size: 13px;
                 color: #222;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             h2 {
                 margin: 0 0 12px;
                 font-size: 14px;
                 color: #2b5797;
+            }
+
+            h2.section-gap {
+                margin-top: 18px;
             }
 
             .swatch-row {
@@ -52,6 +57,8 @@
                 height: 40px;
                 margin-bottom: 6px;
                 border: 1px solid #808080;
+                background-size: cover;
+                background-position: center;
             }
 
             .preview-teal {
@@ -65,13 +72,17 @@
             .preview-miku {
                 background: linear-gradient(135deg, #bec8d1 0 20%, #86cecb 20% 40%, #137a7f 40% 60%, #373b3e 60% 80%, #e12885 80% 100%);
             }
+
+            .preview-default {
+                background: #008080;
+            }
         </style>
     </head>
 
     <body>
-        <h2>Display Properties</h2>
+        <h2>Theme</h2>
 
-        <div class="swatch-row">
+        <div class="swatch-row" id="theme-row">
             <div class="swatch" data-theme="">
                 <div class="swatch-preview preview-teal"></div>
                 Teal 95
@@ -88,29 +99,77 @@
             </div>
         </div>
 
-        <script>
-            const swatches = document.querySelectorAll(".swatch");
+        <h2 class="section-gap">Wallpaper</h2>
 
-            function markActive(theme) {
-                swatches.forEach(function(el) {
+        <div class="swatch-row" id="wallpaper-row"></div>
+
+        <script>
+            const parentWin = window.parent;
+
+            const themeSwatches = document.querySelectorAll("#theme-row .swatch");
+            const wallpaperRow = document.getElementById("wallpaper-row");
+
+            function markActiveTheme(theme) {
+                themeSwatches.forEach(function(el) {
                     el.classList.toggle("active-swatch", el.dataset.theme === theme);
                 });
             }
 
-            swatches.forEach(function(el) {
+            function markActiveWallpaper(id) {
+                wallpaperRow.querySelectorAll(".swatch").forEach(function(el) {
+                    el.classList.toggle("active-swatch", el.dataset.wallpaper === id);
+                });
+            }
+
+            themeSwatches.forEach(function(el) {
                 el.addEventListener("click", function() {
                     const theme = el.dataset.theme;
 
-                    if (window.parent && typeof window.parent.setSiteTheme === "function") {
-                        window.parent.setSiteTheme(theme);
+                    if (parentWin && typeof parentWin.setSiteTheme === "function") {
+                        parentWin.setSiteTheme(theme);
                     }
 
-                    markActive(theme);
+                    markActiveTheme(theme);
                 });
             });
 
-            if (window.parent && typeof window.parent.getSiteTheme === "function") {
-                markActive(window.parent.getSiteTheme());
+            const wallpaperList = (parentWin && parentWin.WALLPAPERS) || [];
+            const wallpaperOptions = [{ id: "", label: "Default", src: "" }].concat(wallpaperList);
+
+            wallpaperOptions.forEach(function(wp) {
+                const el = document.createElement("div");
+                el.className = "swatch";
+                el.dataset.wallpaper = wp.id;
+
+                const preview = document.createElement("div");
+                preview.className = "swatch-preview";
+
+                if (wp.src) {
+                    preview.style.backgroundImage = 'url("../' + wp.src + '")';
+                } else {
+                    preview.classList.add("preview-default");
+                }
+
+                el.appendChild(preview);
+                el.appendChild(document.createTextNode(wp.label));
+
+                el.addEventListener("click", function() {
+                    if (parentWin && typeof parentWin.setSiteWallpaper === "function") {
+                        parentWin.setSiteWallpaper(wp.id);
+                    }
+
+                    markActiveWallpaper(wp.id);
+                });
+
+                wallpaperRow.appendChild(el);
+            });
+
+            if (parentWin && typeof parentWin.getSiteTheme === "function") {
+                markActiveTheme(parentWin.getSiteTheme());
+            }
+
+            if (parentWin && typeof parentWin.getSiteWallpaper === "function") {
+                markActiveWallpaper(parentWin.getSiteWallpaper());
             }
         </script>
     </body>

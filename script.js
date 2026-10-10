@@ -4,7 +4,7 @@ const apps = [
     { id: "fun", title: "GTA VI", icon: "images/gta6.png", page: "pages/fun.html" },
     { id: "notes", title: "Notes", icon: "images/notes.png", page: "pages/notes.html" },
     { id: "credits", title: "Credits", icon: "images/credits.png", page: "pages/credits.html" },
-    { id: "themes", title: "Display", icon: "images/theme.png", page: "pages/themes.html" }
+    { id: "themes", title: "Display", icon: "images/theme.png", page: "pages/themes.html", width: 440, height: 430 }
 ];
 
 const FRAME_SPEEDS = { slow: 650, normal: 350, fast: 150 };
@@ -22,7 +22,7 @@ const petPack = {
         { src: "shimeji/shime27.png", speed: "slow" }
     ],
     reactFrame: "shimeji/shime42.png",
-    lines: ["*noises*", "...", "miku dayo", "*singing*"],
+    lines: ["*unintelligible*", "...", "*random noises*", "miku-dayo"],
     width: 64
 };
 
@@ -48,6 +48,43 @@ window.setSiteTheme = setSiteTheme;
 window.getSiteTheme = getSiteTheme;
 
 setSiteTheme(getSiteTheme());
+
+const WALLPAPERS = [
+    { id: "clouds", label: "Clouds", src: "wallpapers/clouds.png" },
+    { id: "mourning", label: "Mourning", src: "wallpapers/mourning.jpeg" },
+    { id: "tung", label: "Tung Virus", src: "wallpapers/tung.png" },
+    { id: "kuru", label: "Kuru", src: "wallpapers/kuru.png" }
+];
+
+const wallpaperEl = document.createElement("div");
+wallpaperEl.id = "wallpaper";
+document.body.appendChild(wallpaperEl);
+
+function setSiteWallpaper(id) {
+    const wp = WALLPAPERS.find(function(w) {
+        return w.id === id;
+    });
+
+    if (wp) {
+        wallpaperEl.style.backgroundImage = 'url("' + wp.src + '")';
+        document.body.classList.add("has-wallpaper");
+        localStorage.setItem("riceSiteWallpaper", wp.id);
+    } else {
+        wallpaperEl.style.backgroundImage = "";
+        document.body.classList.remove("has-wallpaper");
+        localStorage.setItem("riceSiteWallpaper", "");
+    }
+}
+
+function getSiteWallpaper() {
+    return localStorage.getItem("riceSiteWallpaper") || "";
+}
+
+window.WALLPAPERS = WALLPAPERS;
+window.setSiteWallpaper = setSiteWallpaper;
+window.getSiteWallpaper = getSiteWallpaper;
+
+setSiteWallpaper(getSiteWallpaper());
 
 const originalPageTitle = document.title;
 
@@ -379,7 +416,13 @@ function showPropertiesDialog() {
     overlay.style.fontFamily = '"MS Sans Serif", "Tahoma", Arial, sans-serif';
     overlay.style.fontSize = "12px";
 
-    const wallpaperName = document.body.classList.contains("backrooms") ? "The Backrooms" : "Teal (Windows 95 Classic)";
+    const currentWallpaper = WALLPAPERS.find(function(w) {
+        return w.id === getSiteWallpaper();
+    });
+
+    const wallpaperName = document.body.classList.contains("backrooms")
+        ? "The Backrooms"
+        : (currentWallpaper ? currentWallpaper.label : "Teal (Windows 95 Classic)");
 
     overlay.innerHTML =
         '<div class="properties-titlebar">' +
