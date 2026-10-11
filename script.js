@@ -22,7 +22,7 @@ const petPack = {
         { src: "shimeji/shime27.png", speed: "slow" }
     ],
     reactFrame: "shimeji/shime42.png",
-    lines: ["*unintelligible*", "...", "*random noises*", "miku-dayo"],
+    lines: ["*noises*", "...", "miku dayo", "*singing*"],
     width: 64
 };
 
@@ -96,6 +96,7 @@ const state = {};
 let audioUnlocked = false;
 let topZ = 1000;
 let audioCtx = null;
+let sfxMuted = localStorage.getItem("riceSiteSfxMuted") === "true";
 
 const startButton = document.createElement("button");
 startButton.id = "start-button";
@@ -111,6 +112,35 @@ if (taskbar) {
     taskbar.appendChild(taskbarItems);
 }
 
+const sfxToggle = document.createElement("button");
+sfxToggle.id = "sfx-toggle";
+sfxToggle.type = "button";
+sfxToggle.title = "toggle interface sounds";
+
+const sfxIcon = document.createElement("img");
+sfxIcon.alt = "";
+sfxToggle.appendChild(sfxIcon);
+
+function updateSfxToggle() {
+    sfxIcon.src = sfxMuted ? "images/speaker_mute.png" : "images/speaker.png";
+}
+
+updateSfxToggle();
+
+sfxToggle.addEventListener("click", function(e) {
+    e.stopPropagation();
+
+    sfxMuted = !sfxMuted;
+    localStorage.setItem("riceSiteSfxMuted", sfxMuted ? "true" : "false");
+    updateSfxToggle();
+
+    if (!sfxMuted) playClickSound();
+});
+
+if (taskbar) {
+    taskbar.appendChild(sfxToggle);
+}
+
 function getAudioCtx() {
     if (!audioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -121,6 +151,8 @@ function getAudioCtx() {
 }
 
 function playBlip(freq, duration, type) {
+    if (sfxMuted) return;
+
     const ctx = getAudioCtx();
     if (!ctx) return;
 
@@ -1065,6 +1097,11 @@ Object.keys(state).forEach(function(id) {
             e.preventDefault();
         }
     }
+
+    s.bar.addEventListener("dblclick", function(e) {
+        if (e.target.tagName === "BUTTON") return;
+        maxWin(id);
+    });
 
     s.bar.addEventListener("mousedown", startDrag);
     s.bar.addEventListener("touchstart", startDrag, {

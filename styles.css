@@ -1226,6 +1226,25 @@ body.theme-miku #volume::-moz-range-thumb {
     background: #bec8d1;
 }
 
+#sfx-toggle {
+    flex-shrink: 0;
+    width: 28px;
+    height: 22px;
+    padding: 0;
+    margin: 0 4px;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sfx-toggle img {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
 #wallpaper {
     position: fixed;
     inset: 0;
