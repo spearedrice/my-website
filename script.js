@@ -115,7 +115,7 @@ if (taskbar) {
 const sfxToggle = document.createElement("button");
 sfxToggle.id = "sfx-toggle";
 sfxToggle.type = "button";
-sfxToggle.title = "toggle interface sounds";
+sfxToggle.title = "mute / unmute all sound";
 
 const sfxIcon = document.createElement("img");
 sfxIcon.alt = "";
@@ -123,6 +123,9 @@ sfxToggle.appendChild(sfxIcon);
 
 function updateSfxToggle() {
     sfxIcon.src = sfxMuted ? "images/speaker_mute.png" : "images/speaker.png";
+
+    const musicAudio = document.getElementById("audio");
+    if (musicAudio) musicAudio.muted = sfxMuted;
 }
 
 updateSfxToggle();
@@ -1414,6 +1417,8 @@ function initMusicPlayer() {
         return;
     }
 
+    audio.muted = sfxMuted;
+
     let girlFrame = 0;
     let girlTimer = null;
     let stillLifeFrame = 0;
@@ -2082,4 +2087,3 @@ function initDesktopPet() {
 
 initDesktopPet();
 startTaskbarClock();
-// :)
