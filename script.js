@@ -468,6 +468,7 @@ function showPropertiesDialog() {
             '<p><strong>Wallpaper:</strong> ' + wallpaperName + '</p>' +
             '<p><strong>Icons:</strong> ' + apps.length + ' installed, freely draggable</p>' +
             '<p><strong>Theme:</strong> Windows 95 Classic</p>' +
+            '<p><strong>Screen saver:</strong> Bouncing logo (3 min)</p>' +
             '<p><strong>Color depth:</strong> ??? bit</p>' +
             '<p><strong>Site by:</strong> rice</p>' +
         '</div>' +
@@ -675,6 +676,7 @@ if (desktopIcons) {
                 { label: "Refresh", onClick: function() { location.reload(); } },
                 { separator: true },
                 { label: "Properties", onClick: showPropertiesDialog },
+                { label: "Screen Saver", onClick: function() { if (window.startScreensaver) window.startScreensaver(); } },
                 { separator: true },
                 { label: "Shut Down...", onClick: shutDown }
             ]);
@@ -1919,6 +1921,161 @@ function startTaskbarClock() {
     setInterval(updateClock, 15000);
 }
 
+function initScreensaver() {
+    const IDLE_MS = 3 * 60 * 1000;
+    const LOGO_SIZE = 96;
+    const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart", "wheel"];
+
+    const saver = document.createElement("div");
+    saver.id = "screensaver";
+
+    const logo = document.createElement("img");
+    logo.src = "images/watermark.png";
+    logo.alt = "";
+    saver.appendChild(logo);
+
+    document.body.appendChild(saver);
+
+    let lastActivity = Date.now();
+    let active = false;
+    let activatedAt = 0;
+    let rafId = null;
+    let lastTime = 0;
+    let x = 0;
+    let y = 0;
+    let vx = 0.12;
+    let vy = 0.09;
+    let hue = 0;
+    let lastMouseX = null;
+    let lastMouseY = null;
+
+    function canStart() {
+        const entry = document.getElementById("entry-overlay");
+        if (entry && entry.style.display !== "none") return false;
+        if (document.getElementById("shutdown-overlay")) return false;
+        return true;
+    }
+
+    function step(now) {
+        if (!active) return;
+
+        const dt = Math.min(now - lastTime, 50);
+        lastTime = now;
+
+        const w = logo.offsetWidth || LOGO_SIZE;
+        const h = logo.offsetHeight || LOGO_SIZE;
+        let bounced = false;
+
+        x += vx * dt;
+        y += vy * dt;
+
+        if (x <= 0) {
+            x = 0;
+            vx = Math.abs(vx);
+            bounced = true;
+        }
+
+        if (x >= window.innerWidth - w) {
+            x = Math.max(0, window.innerWidth - w);
+            vx = -Math.abs(vx);
+            bounced = true;
+        }
+
+        if (y <= 0) {
+            y = 0;
+            vy = Math.abs(vy);
+            bounced = true;
+        }
+
+        if (y >= window.innerHeight - h) {
+            y = Math.max(0, window.innerHeight - h);
+            vy = -Math.abs(vy);
+            bounced = true;
+        }
+
+        if (bounced) {
+            hue = (hue + 70) % 360;
+            logo.style.filter = "hue-rotate(" + hue + "deg)";
+        }
+
+        logo.style.transform = "translate(" + x + "px, " + y + "px)";
+        rafId = requestAnimationFrame(step);
+    }
+
+    function start() {
+        if (active) return;
+
+        active = true;
+        activatedAt = Date.now();
+        saver.classList.add("active");
+
+        x = Math.random() * Math.max(1, window.innerWidth - LOGO_SIZE);
+        y = Math.random() * Math.max(1, window.innerHeight - LOGO_SIZE);
+        vx = (Math.random() < 0.5 ? -1 : 1) * 0.12;
+        vy = (Math.random() < 0.5 ? -1 : 1) * 0.09;
+        lastTime = performance.now();
+
+        rafId = requestAnimationFrame(step);
+    }
+
+    function stop() {
+        active = false;
+        saver.classList.remove("active");
+        cancelAnimationFrame(rafId);
+        lastActivity = Date.now();
+    }
+
+    function onActivity(e) {
+        if (e && e.type === "mousemove") {
+            const moved =
+                lastMouseX === null ||
+                Math.abs(e.screenX - lastMouseX) + Math.abs(e.screenY - lastMouseY) > 3;
+
+            lastMouseX = e.screenX;
+            lastMouseY = e.screenY;
+
+            if (!moved) return;
+        }
+
+        if (active) {
+            if (Date.now() - activatedAt < 600) return;
+            stop();
+        }
+
+        lastActivity = Date.now();
+    }
+
+    function attachTo(doc) {
+        ACTIVITY_EVENTS.forEach(function(name) {
+            doc.addEventListener(name, onActivity, { passive: true });
+        });
+    }
+
+    attachTo(document);
+
+    Object.keys(state).forEach(function(id) {
+        const iframe = state[id].el.querySelector("iframe");
+        if (!iframe) return;
+
+        function hook() {
+            try {
+                if (iframe.contentDocument) attachTo(iframe.contentDocument);
+            } catch (error) {}
+        }
+
+        iframe.addEventListener("load", hook);
+        hook();
+    });
+
+    setInterval(function() {
+        if (!active && canStart() && Date.now() - lastActivity >= IDLE_MS) {
+            start();
+        }
+    }, 1000);
+
+    window.startScreensaver = start;
+}
+
 function initDesktopPet() {
     if (!desktopIcons) return;
 
@@ -2085,5 +2242,6 @@ function initDesktopPet() {
     });
 }
 
+initScreensaver();
 initDesktopPet();
 startTaskbarClock();

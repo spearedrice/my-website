@@ -1245,6 +1245,30 @@ body.theme-miku #volume::-moz-range-thumb {
     pointer-events: none;
 }
 
+#screensaver {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9998;
+    display: none;
+    cursor: none;
+    overflow: hidden;
+}
+
+#screensaver.active {
+    display: block;
+}
+
+#screensaver img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 96px;
+    height: auto;
+    pointer-events: none;
+    will-change: transform;
+}
+
 #wallpaper {
     position: fixed;
     inset: 0;
