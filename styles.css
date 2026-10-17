@@ -1245,6 +1245,77 @@ body.theme-miku #volume::-moz-range-thumb {
     pointer-events: none;
 }
 
+#konami-rain {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#konami-rain img {
+    position: absolute;
+    top: 0;
+    height: auto;
+    animation-name: konami-fall;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+}
+
+@keyframes konami-fall {
+    from {
+        transform: translateY(-150px) rotate(0deg);
+    }
+    to {
+        transform: translateY(calc(100vh + 150px)) rotate(var(--spin, 360deg));
+    }
+}
+
+#konami-bsod {
+    position: fixed;
+    inset: 0;
+    z-index: 9997;
+    background: #0000aa;
+    color: #fff;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 16px;
+    padding: 8vh 8vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    cursor: none;
+}
+
+#konami-bsod p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+#konami-bsod .bsod-title {
+    align-self: center;
+    background: #aaaaaa;
+    color: #0000aa;
+    padding: 2px 12px;
+    font-weight: bold;
+}
+
+#konami-bsod .bsod-prompt {
+    text-align: center;
+    margin-top: 12px;
+}
+
+#konami-bsod .bsod-blink {
+    animation: konami-blink 1s steps(1) infinite;
+}
+
+@keyframes konami-blink {
+    50% {
+        opacity: 0;
+    }
+}
+
 #screensaver {
     position: fixed;
     inset: 0;

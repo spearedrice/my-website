@@ -1358,7 +1358,7 @@ function toggleIframeBackrooms(app, active) {
 
     const iframe = s.el.querySelector("iframe");
 
-    if (!iframe || !iframe.contentDocument) return;
+    if (!iframe || !iframe.contentDocument || !iframe.contentDocument.body) return;
 
     iframe.contentDocument.body.classList.toggle(
         "backrooms-iframe",
@@ -1427,6 +1427,10 @@ function initMusicPlayer() {
     let stillLifeTimer = null;
     let backroomsActive = false;
     let currentArtUrl = null;
+
+    window.isBackroomsActive = function() {
+        return backroomsActive;
+    };
 
     function startGirl() {
         if (girlTimer || !backroomsGirl) return;
@@ -1921,6 +1925,211 @@ function startTaskbarClock() {
     setInterval(updateClock, 15000);
 }
 
+function initKonami() {
+    const SEQUENCE = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
+    const RAIN_SPRITES = ["shimeji/shime9.png", "shimeji/shime10.png", "shimeji/shime19.png", "shimeji/shime22.png"];
+    const EFFECTS = ["rain", "bsod", "zoomies", "backrooms"];
+
+    let progress = 0;
+    let busy = false;
+    let lastEffect = "";
+
+    function blocked() {
+        const entry = document.getElementById("entry-overlay");
+        const saver = document.getElementById("screensaver");
+
+        if (entry && entry.style.display !== "none") return true;
+        if (document.getElementById("shutdown-overlay")) return true;
+        if (saver && saver.classList.contains("active")) return true;
+
+        return busy;
+    }
+
+    function rain() {
+        busy = true;
+
+        const layer = document.createElement("div");
+        layer.id = "konami-rain";
+
+        for (let i = 0; i < 28; i++) {
+            const img = document.createElement("img");
+            img.src = RAIN_SPRITES[Math.floor(Math.random() * RAIN_SPRITES.length)];
+            img.alt = "";
+            img.style.left = Math.random() * 92 + "%";
+            img.style.width = 48 + Math.random() * 56 + "px";
+            img.style.animationDuration = 2.6 + Math.random() * 2.4 + "s";
+            img.style.animationDelay = Math.random() * 2.2 + "s";
+            img.style.setProperty("--spin", (Math.random() < 0.5 ? -1 : 1) * (180 + Math.random() * 360) + "deg");
+            layer.appendChild(img);
+        }
+
+        document.body.appendChild(layer);
+
+        [660, 784, 988, 1319].forEach(function(freq, i) {
+            setTimeout(function() {
+                playBlip(freq, 0.1);
+            }, i * 90);
+        });
+
+        setTimeout(function() {
+            layer.remove();
+            busy = false;
+        }, 7800);
+    }
+
+    function bsod() {
+        busy = true;
+
+        const screen = document.createElement("div");
+        screen.id = "konami-bsod";
+        screen.innerHTML =
+            '<div class="bsod-title">RICE-PC</div>' +
+            '<p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36. The current application will be terminated.</p>' +
+            '<p>*&nbsp; Press any key to terminate the current application.</p>' +
+            '<p>*&nbsp; Press CTRL+ALT+DEL again to restart your computer. You will lose any unsaved information in all applications.</p>' +
+            '<p class="bsod-prompt">Press any key to continue <span class="bsod-blink">_</span></p>';
+
+        document.body.appendChild(screen);
+        playCloseSound();
+
+        const armedAt = Date.now();
+        let closed = false;
+
+        function close() {
+            if (closed) return;
+            closed = true;
+
+            document.removeEventListener("keydown", onKey);
+            screen.remove();
+            playOpenSound();
+            busy = false;
+        }
+
+        function onKey() {
+            if (Date.now() - armedAt > 900) close();
+        }
+
+        document.addEventListener("keydown", onKey);
+
+        screen.addEventListener("click", function() {
+            if (Date.now() - armedAt > 900) close();
+        });
+
+        setTimeout(close, 5000);
+    }
+
+    function zoomies() {
+        busy = true;
+
+        if (typeof window.petFrenzy === "function") {
+            window.petFrenzy(6000);
+        }
+
+        [523, 659, 784, 1047, 784, 1047].forEach(function(freq, i) {
+            setTimeout(function() {
+                playBlip(freq, 0.07);
+            }, i * 70);
+        });
+
+        setTimeout(function() {
+            busy = false;
+        }, 6000);
+    }
+
+    function backroomsFlash() {
+        busy = true;
+
+        document.body.classList.add("backrooms");
+        applyBackroomsBranding(true);
+
+        apps.forEach(function(app) {
+            toggleIframeBackrooms(app, true);
+        });
+
+        playBlip(110, 0.45, "sawtooth");
+
+        setTimeout(function() {
+            playBlip(92, 0.5, "sawtooth");
+        }, 220);
+
+        setTimeout(function() {
+            if (typeof window.isBackroomsActive === "function" && window.isBackroomsActive()) {
+                busy = false;
+                return;
+            }
+
+            document.body.classList.remove("backrooms");
+            applyBackroomsBranding(false);
+
+            apps.forEach(function(app) {
+                toggleIframeBackrooms(app, false);
+            });
+
+            busy = false;
+        }, 5000);
+    }
+
+    function run(name) {
+        if (blocked()) return;
+
+        let pick = name;
+
+        if (EFFECTS.indexOf(pick) === -1) {
+            const pool = EFFECTS.filter(function(n) {
+                return n !== lastEffect;
+            });
+
+            pick = pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        if (pick === "backrooms" && typeof window.isBackroomsActive === "function" && window.isBackroomsActive()) {
+            pick = "rain";
+        }
+
+        lastEffect = pick;
+
+        if (pick === "rain") rain();
+        else if (pick === "bsod") bsod();
+        else if (pick === "zoomies") zoomies();
+        else backroomsFlash();
+    }
+
+    function onKey(e) {
+        const key = (e.key || "").toLowerCase();
+
+        if (key === SEQUENCE[progress]) {
+            progress += 1;
+
+            if (progress === SEQUENCE.length) {
+                progress = 0;
+                run();
+            }
+        } else {
+            progress = key === SEQUENCE[0] ? 1 : 0;
+        }
+    }
+
+    document.addEventListener("keydown", onKey);
+
+    Object.keys(state).forEach(function(id) {
+        const iframe = state[id].el.querySelector("iframe");
+        if (!iframe) return;
+
+        function hook() {
+            try {
+                if (iframe.contentDocument) {
+                    iframe.contentDocument.addEventListener("keydown", onKey);
+                }
+            } catch (error) {}
+        }
+
+        iframe.addEventListener("load", hook);
+        hook();
+    });
+
+    window.runKonamiEffect = run;
+}
+
 function initScreensaver() {
     const IDLE_MS = 3 * 60 * 1000;
     const LOGO_SIZE = 96;
@@ -2104,6 +2313,7 @@ function initDesktopPet() {
     let velocity = 0;
     let pauseTimer = 0;
     let bobPhase = 0;
+    let frenzyUntil = 0;
 
     function bounds() {
         const rect = desktopIcons.getBoundingClientRect();
@@ -2136,16 +2346,22 @@ function initDesktopPet() {
     }
 
     function tick(dt) {
+        const frenzy = Date.now() < frenzyUntil;
+
         modeTimer += dt;
 
-        if (modeTimer >= modeDuration) {
+        if (frenzy && mode === "idle") {
+            pickNewMode();
+        }
+
+        if (modeTimer >= modeDuration && !frenzy) {
             pickNewMode();
         }
 
         const frames = mode === "walk" ? petPack.walkFrames : petPack.idleFrames;
 
         frameElapsed += dt;
-        const currentDuration = FRAME_SPEEDS[frames[frameIndex].speed] || FRAME_SPEEDS.normal;
+        const currentDuration = (FRAME_SPEEDS[frames[frameIndex].speed] || FRAME_SPEEDS.normal) / (frenzy ? 2.2 : 1);
 
         if (frameElapsed >= currentDuration) {
             frameElapsed -= currentDuration;
@@ -2161,26 +2377,26 @@ function initDesktopPet() {
                 pauseTimer -= dt;
                 velocity *= 0.85;
             } else {
-                const targetVelocity = dir * walkSpeed;
-                velocity += (targetVelocity - velocity) * Math.min(1, dt / 220);
+                const targetVelocity = dir * (frenzy ? 0.42 : walkSpeed);
+                velocity += (targetVelocity - velocity) * Math.min(1, dt / (frenzy ? 90 : 220));
             }
 
             x += velocity * dt;
-            bobPhase += dt;
+            bobPhase += dt * (frenzy ? 2 : 1);
 
-            const bobOffset = pauseTimer > 0 ? 0 : -Math.abs(Math.sin(bobPhase / 140)) * 3;
+            const bobOffset = pauseTimer > 0 ? 0 : -Math.abs(Math.sin(bobPhase / 140)) * (frenzy ? 6 : 3);
             pet.style.top = (y + bobOffset) + "px";
 
             if (x <= 0) {
                 x = 0;
                 dir = 1;
-                pauseTimer = 260 + Math.random() * 220;
+                pauseTimer = frenzy ? 0 : 260 + Math.random() * 220;
             }
 
             if (x >= b.w - petPack.width) {
                 x = b.w - petPack.width;
                 dir = -1;
-                pauseTimer = 260 + Math.random() * 220;
+                pauseTimer = frenzy ? 0 : 260 + Math.random() * 220;
             }
 
             pet.style.left = x + "px";
@@ -2240,8 +2456,13 @@ function initDesktopPet() {
             bubble.style.display = "none";
         }, 2200);
     });
+
+    window.petFrenzy = function(ms) {
+        frenzyUntil = Date.now() + ms;
+    };
 }
 
 initScreensaver();
+initKonami();
 initDesktopPet();
 startTaskbarClock();
