@@ -239,6 +239,9 @@ apps.forEach(function(app) {
         dragging: false,
         resizing: false,
         maximized: false,
+        snapped: null,
+        snapRestore: null,
+        dragOrigin: null,
         savedRect: null,
         opened: false,
         x: 0,
@@ -575,6 +578,10 @@ document.addEventListener("scroll", function() {
 
 window.addEventListener("resize", function() {
     closeContextMenu();
+
+    Object.keys(state).forEach(function(id) {
+        if (state[id].snapped) layoutSnapped(state[id]);
+    });
 });
 
 function resetAllIconPositions() {
@@ -962,6 +969,8 @@ function maxWin(id) {
 
     playClickSound();
 
+    s.snapped = null;
+
     if (s.maximized) {
         s.el.style.left = s.savedRect.left;
         s.el.style.top = s.savedRect.top;
@@ -1093,6 +1102,7 @@ Object.keys(state).forEach(function(id) {
 
         s.x = point.x - rect.left;
         s.y = point.y - rect.top;
+        s.dragOrigin = { x: point.x, y: point.y };
 
         s.el.style.transform = "none";
         s.el.style.left = rect.left + "px";
@@ -1120,6 +1130,7 @@ Object.keys(state).forEach(function(id) {
         if (s.maximized) return;
 
         s.resizing = true;
+        s.snapped = null;
         s.el.classList.add("interacting");
 
         const rect = s.el.getBoundingClientRect();
@@ -1137,6 +1148,104 @@ Object.keys(state).forEach(function(id) {
     });
 });
 
+let dragSnapZone = null;
+let snapPreviewEl = null;
+
+function getSnapPreview() {
+    if (!snapPreviewEl) {
+        snapPreviewEl = document.createElement("div");
+        snapPreviewEl.id = "snap-preview";
+        document.body.appendChild(snapPreviewEl);
+    }
+
+    return snapPreviewEl;
+}
+
+function snapZoneFor(point) {
+    const edge = 4;
+
+    if (point.x <= edge) return "left";
+    if (point.x >= window.innerWidth - 1 - edge) return "right";
+    if (point.y <= edge) return "top";
+
+    return null;
+}
+
+function snapRect(zone) {
+    const half = Math.floor(window.innerWidth / 2);
+    const height = window.innerHeight - 34;
+
+    if (zone === "left") return { left: 0, top: 0, width: half, height: height };
+    if (zone === "right") return { left: half, top: 0, width: window.innerWidth - half, height: height };
+
+    return { left: 0, top: 0, width: window.innerWidth, height: height };
+}
+
+function showSnapPreview(zone) {
+    const el = getSnapPreview();
+
+    if (!zone) {
+        el.classList.remove("visible");
+        return;
+    }
+
+    const r = snapRect(zone);
+
+    el.style.left = r.left + "px";
+    el.style.top = r.top + "px";
+    el.style.width = r.width + "px";
+    el.style.height = r.height + "px";
+    el.classList.add("visible");
+}
+
+function layoutSnapped(s) {
+    const r = snapRect(s.snapped);
+
+    s.el.style.transform = "none";
+    s.el.style.left = r.left + "px";
+    s.el.style.top = r.top + "px";
+    s.el.style.width = r.width + "px";
+    s.el.style.height = r.height + "px";
+}
+
+function applySnap(id, zone) {
+    const s = state[id];
+    if (!s || s.maximized) return;
+
+    if (zone === "top") {
+        maxWin(id);
+        return;
+    }
+
+    if (!s.snapped) {
+        const rect = s.el.getBoundingClientRect();
+        s.snapRestore = { width: rect.width, height: rect.height };
+    }
+
+    s.snapped = zone;
+    layoutSnapped(s);
+    focusWin(id);
+    playClickSound();
+}
+
+function releaseSnap(s, point) {
+    const rect = s.el.getBoundingClientRect();
+    const ratio = rect.width > 0 ? (point.x - rect.left) / rect.width : 0.5;
+    const w = s.snapRestore ? s.snapRestore.width : 420;
+    const h = s.snapRestore ? s.snapRestore.height : 320;
+    const left = point.x - ratio * w;
+    const top = Math.max(0, point.y - 14);
+
+    s.el.style.width = w + "px";
+    s.el.style.height = h + "px";
+    s.el.style.left = left + "px";
+    s.el.style.top = top + "px";
+
+    s.x = point.x - left;
+    s.y = point.y - top;
+    s.snapped = null;
+}
+
 function handleMove(e) {
     if (e.type === "mousemove" && e.buttons === 0) {
         Object.keys(state).forEach(function(id) {
@@ -1144,6 +1253,9 @@ function handleMove(e) {
             state[id].resizing = false;
             state[id].el.classList.remove("interacting");
         });
+
+        dragSnapZone = null;
+        showSnapPreview(null);
 
         return;
     }
@@ -1155,8 +1267,17 @@ function handleMove(e) {
         const s = state[id];
 
         if (s.dragging) {
-            s.el.style.left = point.x - s.x + "px";
-            s.el.style.top = point.y - s.y + "px";
+            if (s.snapped && s.dragOrigin && Math.abs(point.x - s.dragOrigin.x) + Math.abs(point.y - s.dragOrigin.y) > 4) {
+                releaseSnap(s, point);
+            }
+
+            if (!s.snapped) {
+                s.el.style.left = point.x - s.x + "px";
+                s.el.style.top = point.y - s.y + "px";
+                dragSnapZone = snapZoneFor(point);
+                showSnapPreview(dragSnapZone);
+            }
+
             isInteracting = true;
         }
 
@@ -1187,13 +1308,23 @@ document.addEventListener("touchmove", handleMove, {
 });
 
 function handleInteractionEnd() {
+    const zone = dragSnapZone;
+
+    dragSnapZone = null;
+    showSnapPreview(null);
+
     Object.keys(state).forEach(function(id) {
         const s = state[id];
+        const wasDragging = s.dragging;
         const wasInteracting = s.dragging || s.resizing;
 
         s.dragging = false;
         s.resizing = false;
         s.el.classList.remove("interacting");
+
+        if (wasDragging && zone) {
+            applySnap(id, zone);
+        }
 
         if (wasInteracting) {
             saveWindowState(id);

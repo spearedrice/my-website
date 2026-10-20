@@ -1245,6 +1245,40 @@ body.theme-miku #volume::-moz-range-thumb {
     pointer-events: none;
 }
 
+#snap-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    z-index: 1900;
+    box-sizing: border-box;
+    background: rgba(16, 132, 208, 0.28);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+#snap-preview.visible {
+    opacity: 1;
+}
+
+body.backrooms #snap-preview {
+    background: rgba(184, 154, 63, 0.3);
+    border-color: #f0e4b0;
+}
+
+body.theme-dark #snap-preview {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #888;
+}
+
+body.theme-miku #snap-preview {
+    background: rgba(134, 206, 203, 0.35);
+    border-color: #e12885;
+}
+
 #konami-rain {
     position: fixed;
     inset: 0;
