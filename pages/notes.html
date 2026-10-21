@@ -5,26 +5,130 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>notes</title>
         <style>
+            html,
+            body {
+                height: 100%;
+            }
+
             body {
                 margin: 0;
-                padding: 16px;
                 background: #ffffe1;
                 font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
                 font-size: 13px;
                 color: #222;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
                 box-sizing: border-box;
-                height: 100vh;
-                overflow: auto;
             }
 
-            p {
-                margin: 0 0 10px;
+            #pad {
+                flex: 1;
+                width: 100%;
+                min-height: 0;
+                box-sizing: border-box;
+                border: 0;
+                outline: none;
+                resize: none;
+                background: transparent;
+                padding: 12px 14px;
+                font: inherit;
                 line-height: 1.5;
+                color: inherit;
+            }
+
+            .status {
+                flex-shrink: 0;
+                display: flex;
+                justify-content: space-between;
+                padding: 3px 10px;
+                font-size: 11px;
+                color: #555;
+                border-top: 1px solid #c8c8a0;
+                background: rgba(0, 0, 0, 0.04);
+                user-select: none;
+            }
+
+            body.backrooms-iframe {
+                background: #e5d9a8;
+                animation: br-iframe-flicker 4s infinite;
+            }
+
+            body.backrooms-iframe #pad {
+                color: #2a1f0d;
+            }
+
+            body.backrooms-iframe .status {
+                color: #2a1f0d;
+                border-top-color: #6b5a1e;
+            }
+
+            @keyframes br-iframe-flicker {
+                0%, 96%, 100% { text-shadow: none; }
+                97% { text-shadow: 1px 0 0 rgba(255, 0, 0, 0.35), -1px 0 0 rgba(0, 255, 255, 0.35); }
+                98% { text-shadow: none; }
             }
         </style>
     </head>
 
     <body>
-        <p>femboys soon</p>
+        <textarea id="pad" spellcheck="false" placeholder="type something..."></textarea>
+
+        <div class="status">
+            <span id="save-status">saved on this device</span>
+            <span id="count">0 chars</span>
+        </div>
+
+        <script>
+            const STORAGE_KEY = "riceSiteNotes";
+            const DEFAULT_TEXT = "note to self: finish the site lol\n\nthis is a real notepad now. type anything, it saves on this device only.";
+
+            const pad = document.getElementById("pad");
+            const statusEl = document.getElementById("save-status");
+            const countEl = document.getElementById("count");
+
+            let saveTimer = null;
+
+            function loadNotes() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    return saved === null ? DEFAULT_TEXT : saved;
+                } catch (error) {
+                    return DEFAULT_TEXT;
+                }
+            }
+
+            function saveNotes() {
+                clearTimeout(saveTimer);
+                saveTimer = null;
+
+                try {
+                    localStorage.setItem(STORAGE_KEY, pad.value);
+                    statusEl.textContent = "saved on this device";
+                } catch (error) {
+                    statusEl.textContent = "couldn't save";
+                }
+            }
+
+            function updateCount() {
+                const n = pad.value.length;
+                countEl.textContent = n + (n === 1 ? " char" : " chars");
+            }
+
+            pad.value = loadNotes();
+            updateCount();
+
+            pad.addEventListener("input", function() {
+                statusEl.textContent = "typing...";
+                updateCount();
+
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(saveNotes, 400);
+            });
+
+            window.addEventListener("pagehide", function() {
+                if (saveTimer) saveNotes();
+            });
+        </script>
     </body>
 </html>
