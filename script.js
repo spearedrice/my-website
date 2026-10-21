@@ -21,8 +21,29 @@ const petPack = {
         { src: "shimeji/shime26.png", speed: "slow" },
         { src: "shimeji/shime27.png", speed: "slow" }
     ],
+    vSitFrames: [
+        { src: "shimeji/shime28.png", speed: "slow" },
+        { src: "shimeji/shime29.png", speed: "slow" },
+        { src: "shimeji/shime30.png", speed: "normal" }
+    ],
+    sleepFrames: [
+        { src: "shimeji/shime18.png", speed: "slow" },
+        { src: "shimeji/shime20.png", speed: "slow" },
+        { src: "shimeji/shime21.png", speed: "slow" }
+    ],
+    danceFrames: [
+        { src: "shimeji/shime5.png", speed: "normal" },
+        { src: "shimeji/shime6.png", speed: "normal" },
+        { src: "shimeji/shime7.png", speed: "normal" }
+    ],
+    skipFrames: [
+        { src: "shimeji/shime12.png", speed: "normal" },
+        { src: "shimeji/shime13.png", speed: "normal" },
+        { src: "shimeji/shime14.png", speed: "normal" }
+    ],
     reactFrame: "shimeji/shime42.png",
     lines: ["*noises*", "...", "miku dayo", "*singing*"],
+    wakeLine: "*yawn*",
     width: 64
 };
 
@@ -2423,7 +2444,7 @@ function initDesktopPet() {
     pet.id = "desktop-pet";
 
     const petImg = document.createElement("img");
-    petImg.src = petPack.walkFrames[0];
+    petImg.src = petPack.walkFrames[0].src;
     petImg.alt = "";
     pet.appendChild(petImg);
 
@@ -2431,6 +2452,14 @@ function initDesktopPet() {
 
     const PET_BOX = 72;
     const FLOOR_GAP = 1;
+
+    const MODES = {
+        walk: { moving: true, speed: 1, bob: 3, min: 2500, range: 3500 },
+        skip: { moving: true, speed: 1.9, bob: 5, min: 2000, range: 2000 },
+        idle: { moving: false, min: 2000, range: 2500 },
+        dance: { moving: false, min: 3000, range: 2500 },
+        sleep: { moving: false, min: 5000, range: 3000 }
+    };
 
     let x = 40;
     let y = 0;
@@ -2445,6 +2474,10 @@ function initDesktopPet() {
     let pauseTimer = 0;
     let bobPhase = 0;
     let frenzyUntil = 0;
+    let reactUntil = 0;
+    let idleSet = petPack.idleFrames;
+    let bubbleEl = null;
+    let bubbleTimer = null;
 
     function bounds() {
         const rect = desktopIcons.getBoundingClientRect();
@@ -2459,21 +2492,48 @@ function initDesktopPet() {
     pet.style.left = x + "px";
     pet.style.top = y + "px";
 
-    function pickNewMode() {
-        mode = mode === "walk" ? "idle" : "walk";
+    function framesFor(name) {
+        if (name === "walk") return petPack.walkFrames;
+        if (name === "skip") return petPack.skipFrames;
+        if (name === "dance") return petPack.danceFrames;
+        if (name === "sleep") return petPack.sleepFrames;
+
+        return idleSet;
+    }
+
+    function setMode(name) {
+        mode = name;
         modeTimer = 0;
-        modeDuration = mode === "walk" ? 2500 + Math.random() * 3500 : 2000 + Math.random() * 2000;
+        modeDuration = MODES[name].min + Math.random() * MODES[name].range;
         frameIndex = 0;
         frameElapsed = 0;
+        velocity = 0;
 
-        if (mode === "walk") {
+        if (name === "idle") {
+            idleSet = Math.random() < 0.35 ? petPack.vSitFrames : petPack.idleFrames;
+        }
+
+        if (MODES[name].moving) {
             dir = Math.random() < 0.5 ? -1 : 1;
             walkSpeed = 0.03 + Math.random() * 0.025;
-            velocity = 0;
             pauseTimer = 0;
         } else {
             pet.style.top = y + "px";
         }
+    }
+
+    function chooseNextMode() {
+        const roll = Math.random();
+
+        if (MODES[mode].moving) {
+            if (roll < 0.35) return "idle";
+            if (roll < 0.62) return "dance";
+            if (roll < 0.74) return "sleep";
+
+            return mode === "walk" ? "skip" : "walk";
+        }
+
+        return roll < 0.75 ? "walk" : "skip";
     }
 
     function tick(dt) {
@@ -2481,15 +2541,15 @@ function initDesktopPet() {
 
         modeTimer += dt;
 
-        if (frenzy && mode === "idle") {
-            pickNewMode();
+        if (frenzy && !MODES[mode].moving) {
+            setMode("walk");
         }
 
         if (modeTimer >= modeDuration && !frenzy) {
-            pickNewMode();
+            setMode(chooseNextMode());
         }
 
-        const frames = mode === "walk" ? petPack.walkFrames : petPack.idleFrames;
+        const frames = framesFor(mode);
 
         frameElapsed += dt;
         const currentDuration = (FRAME_SPEEDS[frames[frameIndex].speed] || FRAME_SPEEDS.normal) / (frenzy ? 2.2 : 1);
@@ -2499,23 +2559,31 @@ function initDesktopPet() {
             frameIndex = (frameIndex + 1) % frames.length;
         }
 
-        petImg.src = frames[frameIndex].src;
+        if (Date.now() >= reactUntil) {
+            const nextSrc = frames[frameIndex].src;
 
-        if (mode === "walk") {
+            if (petImg.getAttribute("src") !== nextSrc) {
+                petImg.src = nextSrc;
+            }
+        }
+
+        const cfg = MODES[mode];
+
+        if (cfg.moving) {
             const b = bounds();
 
             if (pauseTimer > 0) {
                 pauseTimer -= dt;
                 velocity *= 0.85;
             } else {
-                const targetVelocity = dir * (frenzy ? 0.42 : walkSpeed);
+                const targetVelocity = dir * (frenzy ? 0.42 : walkSpeed * cfg.speed);
                 velocity += (targetVelocity - velocity) * Math.min(1, dt / (frenzy ? 90 : 220));
             }
 
             x += velocity * dt;
             bobPhase += dt * (frenzy ? 2 : 1);
 
-            const bobOffset = pauseTimer > 0 ? 0 : -Math.abs(Math.sin(bobPhase / 140)) * (frenzy ? 6 : 3);
+            const bobOffset = pauseTimer > 0 ? 0 : -Math.abs(Math.sin(bobPhase / 140)) * (frenzy ? 6 : cfg.bob);
             pet.style.top = (y + bobOffset) + "px";
 
             if (x <= 0) {
@@ -2532,6 +2600,11 @@ function initDesktopPet() {
 
             pet.style.left = x + "px";
             pet.style.transform = dir === -1 ? "scaleX(1)" : "scaleX(-1)";
+        }
+
+        if (bubbleEl && bubbleEl.style.display === "block") {
+            bubbleEl.style.left = x + "px";
+            bubbleEl.style.top = (y - 26) + "px";
         }
     }
 
@@ -2552,39 +2625,41 @@ function initDesktopPet() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function() {
             y = floorY();
-            if (mode === "idle") {
+
+            if (!MODES[mode].moving) {
                 pet.style.top = y + "px";
             }
         }, 150);
     });
 
-    let bubbleTimer = null;
-
     pet.addEventListener("click", function(e) {
         e.stopPropagation();
 
-        const prevSrc = petImg.src;
+        const waking = mode === "sleep";
+
+        reactUntil = Date.now() + 700;
         petImg.src = petPack.reactFrame;
-        setTimeout(function() {
-            petImg.src = prevSrc;
-        }, 400);
 
-        let bubble = document.getElementById("pet-bubble");
-
-        if (!bubble) {
-            bubble = document.createElement("div");
-            bubble.id = "pet-bubble";
-            desktopIcons.appendChild(bubble);
+        if (waking) {
+            setMode("idle");
         }
 
-        bubble.textContent = petPack.lines[Math.floor(Math.random() * petPack.lines.length)];
-        bubble.style.left = x + "px";
-        bubble.style.top = (y - 26) + "px";
-        bubble.style.display = "block";
+        if (!bubbleEl) {
+            bubbleEl = document.createElement("div");
+            bubbleEl.id = "pet-bubble";
+            desktopIcons.appendChild(bubbleEl);
+        }
+
+        bubbleEl.textContent = waking
+            ? petPack.wakeLine
+            : petPack.lines[Math.floor(Math.random() * petPack.lines.length)];
+        bubbleEl.style.left = x + "px";
+        bubbleEl.style.top = (y - 26) + "px";
+        bubbleEl.style.display = "block";
 
         clearTimeout(bubbleTimer);
         bubbleTimer = setTimeout(function() {
-            bubble.style.display = "none";
+            bubbleEl.style.display = "none";
         }, 2200);
     });
 
