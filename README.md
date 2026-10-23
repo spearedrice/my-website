@@ -60,4 +60,6 @@ Music metadata (title, artist, cover art) is read from the MP3 tags at runtime w
 - Miku shimeji sprites by [zarla](https://www.deviantart.com/zarla)
 - [Hospital wallpaper](https://x.com/myticalcat/status/1977059230583865426) - [myticalcat](https://x.com/myticalcat)
 - Music: "BIRDBRAIN" by Jamie Paige & OK Glass (feat. Kasane Teto), "Looping the Rooms" by The Larping Tombstone
+<<<<<<< HEAD
 - Walkthrough video by a very nice [person!](https://github.com/blowupthenoobs)
+
