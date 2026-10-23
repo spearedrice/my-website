@@ -34,7 +34,7 @@ Just open the live link and click to enter. Sound is on, so turn your volume to 
 
 ## Run it locally
 
-- **Requirements:** I used something called Live Server in VScode, and I was using Windows at the time, so I'm not sure how it is for other OSes. It also doesn't work without Live Server or whatever local dev server thingie you're using so please make note of that
+- **Requirements:** I used something called Live Server in VScode, and I was using Windows at the time, so I'm not sure how it is for other OSes. It also doesn't work without Live Server or whatever local dev server thingie you're using so please make note of that.
 
 ```bash
 git clone https://github.com/spearedrice/my-website.git
@@ -47,7 +47,7 @@ python -m http.server 8000
 
 The window apps (Hello, About, Notes, etc.) load as iframes, so each page stays self-contained. The music player is the exception: it's fetched and injected directly into `index.html`. Every browser I've seen blocks audio that's started without a real click *in the same frame*, so an iframe player couldn't unlock playback from the "click to enter" screen I added (that was a solution to enable audio!).  Putting it directly into the main site made it so it would work, so I stuck with that
 
-Music metadata (title, artist, cover art) is read from the MP3 tags at runtime with mp3tag.js , so adding a song is just dropping in a file. Volume, shuffle, repeat, and last track persist using `localStorage`. You will have to add the file to script.js too to get it to work also!!.
+Music metadata (title, artist, cover art) is read from the MP3 tags at runtime with mp3tag.js , so adding a song is just dropping in a file. Volume, shuffle, repeat, and last track persist using `localStorage`. You will have to add the file to script.js too to get it to work also!!
 
 ## Roadmap
 
@@ -60,6 +60,5 @@ Music metadata (title, artist, cover art) is read from the MP3 tags at runtime w
 - Miku shimeji sprites by [zarla](https://www.deviantart.com/zarla)
 - [Hospital wallpaper](https://x.com/myticalcat/status/1977059230583865426) - [myticalcat](https://x.com/myticalcat)
 - Music: "BIRDBRAIN" by Jamie Paige & OK Glass (feat. Kasane Teto), "Looping the Rooms" by The Larping Tombstone
-<<<<<<< HEAD
 - Walkthrough video by a very nice [person!](https://github.com/blowupthenoobs)
 
