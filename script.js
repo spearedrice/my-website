@@ -276,11 +276,21 @@ const desktopIcons = document.getElementById("desktop-icons");
 const desktopIconEls = {};
 const columnStep = 92;
 const rowStep = 96;
-const iconsPerColumn = 5;
+const maxIconsPerColumn = 5;
+
+function iconsPerColumnNow() {
+    if (!desktopIcons) return maxIconsPerColumn;
+
+    const h = desktopIcons.getBoundingClientRect().height;
+    if (!h) return maxIconsPerColumn;
+
+    return Math.max(1, Math.min(maxIconsPerColumn, Math.floor((h - 10) / rowStep)));
+}
 
 function gridPositionFor(index) {
-    const col = Math.floor(index / iconsPerColumn);
-    const row = index % iconsPerColumn;
+    const perColumn = iconsPerColumnNow();
+    const col = Math.floor(index / perColumn);
+    const row = index % perColumn;
     return {
         left: 15 + col * columnStep,
         top: 10 + row * rowStep
@@ -368,7 +378,7 @@ function makeIconDraggable(iconEl, app) {
         if (e.type === "touchmove" && e.cancelable) e.preventDefault();
     }
 
-    function onUp() {
+    function onUp(e) {
         if (!dragging) return;
         dragging = false;
         iconEl.classList.remove("dragging");
@@ -377,9 +387,12 @@ function makeIconDraggable(iconEl, app) {
         document.removeEventListener("touchmove", onMove);
         document.removeEventListener("mouseup", onUp);
         document.removeEventListener("touchend", onUp);
+        document.removeEventListener("touchcancel", onUp);
 
         if (moved) {
             saveIconPosition(app.id, parseFloat(iconEl.style.left), parseFloat(iconEl.style.top));
+        } else if (e && e.type === "touchend") {
+            openWin(app.id);
         }
     }
 
@@ -401,6 +414,7 @@ function makeIconDraggable(iconEl, app) {
         document.addEventListener("touchmove", onMove, { passive: false });
         document.addEventListener("mouseup", onUp);
         document.addEventListener("touchend", onUp);
+        document.addEventListener("touchcancel", onUp);
 
         if (e.type === "touchstart") e.preventDefault();
     }
@@ -597,8 +611,22 @@ document.addEventListener("scroll", function() {
     closeContextMenu();
 }, true);
 
+function arrangeUnsavedIcons() {
+    const saved = loadIconPositions();
+
+    apps.forEach(function(app, index) {
+        const els = desktopIconEls[app.id];
+        if (!els || saved[app.id]) return;
+
+        const pos = gridPositionFor(index);
+        els.el.style.left = pos.left + "px";
+        els.el.style.top = pos.top + "px";
+    });
+}
+
 window.addEventListener("resize", function() {
     closeContextMenu();
+    arrangeUnsavedIcons();
 
     Object.keys(state).forEach(function(id) {
         if (state[id].snapped) layoutSnapped(state[id]);
@@ -1183,6 +1211,8 @@ function getSnapPreview() {
 }
 
 function snapZoneFor(point) {
+    if (window.innerWidth <= 600) return null;
+
     const edge = 4;
 
     if (point.x <= edge) return "left";
@@ -1572,6 +1602,20 @@ function initMusicPlayer() {
     }
 
     audio.muted = sfxMuted;
+
+    if (musicPlayerEl) {
+        if (window.innerWidth <= 600) {
+            musicPlayerEl.classList.add("collapsed");
+        }
+
+        const playerTitlebar = musicPlayerEl.querySelector(".music-titlebar");
+
+        if (playerTitlebar) {
+            playerTitlebar.addEventListener("click", function() {
+                musicPlayerEl.classList.toggle("collapsed");
+            });
+        }
+    }
 
     let girlFrame = 0;
     let girlTimer = null;

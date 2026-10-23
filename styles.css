@@ -14,6 +14,7 @@ body {
     font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
     font-size: 14px;
     isolation: isolate;
+    touch-action: manipulation;
 }
 
 body.backrooms {
@@ -272,9 +273,28 @@ button:focus {
 }
 
 @media (max-width: 600px) {
-    .os-window {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 80px);
+    .os-window:not(.minimized) {
+        left: 6px !important;
+        top: 6px !important;
+        width: calc(100vw - 12px) !important;
+        height: calc(100vh - 52px) !important;
+        height: calc(100dvh - 52px) !important;
+    }
+
+    .os-window .resize {
+        display: none;
+    }
+
+    #music-player {
+        right: 6px;
+    }
+
+    #local-save-notice {
+        bottom: 88px;
+    }
+
+    #system-info {
+        display: none;
     }
 }
 
@@ -546,6 +566,14 @@ body.backrooms .context-menu-separator {
     z-index: 1500;
     font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
     transition: width 0.15s ease;
+}
+
+#music-player.collapsed .music-body {
+    display: none;
+}
+
+#music-player .music-titlebar {
+    cursor: pointer;
 }
 
 #music-player.expanded {
